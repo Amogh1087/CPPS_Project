@@ -1,9 +1,7 @@
-This folder consists of the UI of website. It has mainly 3 parts that work in following order :
-1. Homepage.html - The first page that the user will see after the website is opened. It has multiple options like "Analyze My Resume", "See How It Works", "Features", "My Reports", etc.
-2. Analyzer.html - The 'Core' of the website. Here, the user will upload their resume in the form of '.pdf' file or '.docx' file (Other file formats are currently not supported). They also have the option to select the
-   "Job Role" for which they have created the resume. The analyzer will then analyze the resume file and redirect to the next part of the wesite, which is the report.
-4. Report.html - Here, the user will see the report of how concise the resume is for the applied job role. The report will also speculate about the changes required for more concise resume, and will also suggest some
-   additional includings, necessary for a higher chance of hiring. The points won't be random, but the ones related to the uploaded resume.
+This folder contains the UI of the website. It consists of three main parts that work in the following order:
+1. Homepage.html - The landing page users see when they open the website. It includes options such as resume analysis, feature overview, workflow explanation, and access to saved reports.
+2. Analyzer.html - The core functionality of the website. Users upload their resume and select a target job role (currently supports only .pdf and .docx formats). The system analyzes the resume and redirects to the report
+   page.
+3. Report.html - Displays a structured analysis of how well the resume aligns with the selected job role, along with actionable suggestions for improvement and missing elements that could improve chances of being hired.
 
-The reports generated are updated thoroughly as the user uploads the same resume multiple times, keeping the resume to report ratio of 1 : 1. The same happens if another resume is uploaded. The timestamps of updated 
-report will also be visible. Currently, the report of any uploaded resume is not visible, due to some issues. But, it will be fixed soon...
+Reports are updated each time the same resume is re-uploaded, maintaining a 1:1 mapping between a resume and its report. Each new resume generates a separate report, which includes a timestamp indicating the latest update. Currently, reports are not being displayed due to a known issue. This is under active development and will be resolved soon.
