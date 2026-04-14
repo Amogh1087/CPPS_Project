@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResumeIQ — My Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #07101e; --surface: #0d1a2d; --surface2: #122038;
+    --border: #1c3050; --accent: #89c2e0; --accent2: #5294b5;
+    --accent3: #b8d8ec; --text: #d8eaf7; --muted: #456b85;
+    --glow: 0 0 40px rgba(137,194,224,0.12);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.45; }
+  body::after { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(137,194,224,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(137,194,224,0.04) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; z-index:0; }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:20px 60px; background:rgba(7,16,30,.90); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+  .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; letter-spacing:-0.03em; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:8px; }
+  .logo span { color:var(--accent); }
+  .logo-dot { width:8px; height:8px; background:var(--accent); border-radius:50%; box-shadow:0 0 14px var(--accent); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+  .nav-links { display:flex; gap:36px; list-style:none; align-items:center; }
+  .nav-links a { font-size:0.875rem; font-weight:500; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-links a:hover { color:var(--text); }
+  .nav-cta { background:var(--accent); color:var(--bg) !important; padding:9px 22px; border-radius:6px; font-weight:600 !important; transition:box-shadow 0.2s,transform 0.2s !important; }
+  .nav-cta:hover { box-shadow:0 0 24px rgba(137,194,224,.45) !important; transform:translateY(-1px); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .page-wrap { position:relative; z-index:1; display:grid; grid-template-columns:340px 1fr; min-height:100vh; padding-top:80px; }
+
+  .sidebar { border-right:1px solid var(--border); padding:40px 0; height:calc(100vh - 80px); position:sticky; top:80px; overflow-y:auto; }
+  .sidebar::-webkit-scrollbar { width:4px; }
+  .sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .sidebar-header { padding:0 28px 28px; border-bottom:1px solid var(--border); }
+  .sidebar-title { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:4px; }
+  .sidebar-sub { font-size:0.8rem; color:var(--muted); font-weight:300; }
+
+  .sidebar-actions { padding:16px 28px; display:flex; gap:10px; border-bottom:1px solid var(--border); }
+  .btn-new { display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:var(--bg); padding:9px 16px; border-radius:7px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.8rem; text-decoration:none; transition:transform 0.2s,box-shadow 0.2s; white-space:nowrap; flex:1; justify-content:center; }
+  .btn-new:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(137,194,224,.3); }
+  .btn-clear-all { background:transparent; border:1px solid var(--border); color:var(--muted); padding:9px 14px; border-radius:7px; font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .btn-clear-all:hover { border-color:rgba(248,113,113,.5); color:#f87171; }
+
+  .report-list { padding:12px 0; }
+  .report-list-item {
+    padding:16px 28px; cursor:pointer; transition:background 0.15s,border-color 0.15s;
+    border-left:3px solid transparent; position:relative;
+  }
+  .report-list-item:hover { background:rgba(137,194,224,.04); border-left-color:rgba(137,194,224,.3); }
+  .report-list-item.active { background:rgba(137,194,224,.07); border-left-color:var(--accent); }
+  .rli-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .rli-score { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; color:var(--accent); }
+  .rli-date { font-size:0.72rem; color:var(--muted); }
+  .rli-role { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .rli-summary { font-size:0.78rem; color:var(--muted); font-weight:300; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .rli-delete { position:absolute; top:14px; right:14px; background:none; border:none; color:var(--border); cursor:pointer; font-size:14px; padding:4px; border-radius:4px; transition:color 0.2s,background 0.2s; opacity:0; }
+  .report-list-item:hover .rli-delete { opacity:1; }
+  .rli-delete:hover { color:#f87171; background:rgba(248,113,113,.1); }
+
+  .sidebar-empty { padding:48px 28px; text-align:center; }
+  .sidebar-empty-icon { font-size:36px; opacity:0.4; margin-bottom:12px; }
+  .sidebar-empty h4 { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; margin-bottom:8px; }
+  .sidebar-empty p { font-size:0.82rem; color:var(--muted); font-weight:300; line-height:1.5; margin-bottom:20px; }
+
+  .detail-pane { padding:40px 60px 80px; overflow-y:auto; }
+
+  .detail-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; }
+  .detail-empty-icon { font-size:56px; opacity:0.3; margin-bottom:20px; }
+  .detail-empty h2 { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:10px; }
+  .detail-empty p { color:var(--muted); font-size:0.95rem; font-weight:300; max-width:360px; line-height:1.6; margin-bottom:28px; }
+
+  .report-detail { animation:fadeUp 0.4s ease both; }
+  .detail-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding-bottom:24px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:16px; }
+  .detail-header-left {}
+  .detail-label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent); font-weight:600; margin-bottom:6px; }
+  .detail-role { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; }
+  .detail-meta { font-size:0.82rem; color:var(--muted); margin-top:4px; }
+  .score-circle { display:flex; flex-direction:column; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; border:3px solid var(--accent); box-shadow:0 0 30px rgba(137,194,224,.28); background:rgba(137,194,224,.07); flex-shrink:0; }
+  .score-circle-num { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--accent); line-height:1; }
+  .score-circle-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+
+  .summary-card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:12px; padding:20px 24px; margin-bottom:24px; font-size:0.95rem; color:var(--muted); line-height:1.7; font-weight:300; font-style:italic; }
+
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px; }
+  .detail-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .detail-card-header { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .detail-card-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .icon-green{background:rgba(74,222,128,.12)} .icon-red{background:rgba(248,113,113,.12)} .icon-yellow{background:rgba(251,191,36,.12)}
+  .detail-card-title { font-family:'Syne',sans-serif; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+  .detail-item { display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid rgba(137,194,224,.05); font-size:0.83rem; color:var(--text); line-height:1.4; font-weight:300; }
+  .detail-item:last-child { border-bottom:none; }
+  .detail-bullet { width:5px; height:5px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+  .b-green{background:#4ade80} .b-red{background:#f87171} .b-yellow{background:#fbbf24}
+
+  .skills-block { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:24px; }
+  .skills-block-title { font-family:'Syne',sans-serif; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:14px; }
+  .skills-wrap { display:flex; flex-wrap:wrap; gap:8px; }
+  .skill-tag { background:rgba(137,194,224,.07); border:1px solid rgba(137,194,224,.2); color:var(--accent3); padding:6px 14px; border-radius:6px; font-size:0.8rem; font-weight:500; }
+
+  .bars-block { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; }
+  .bars-block-title { font-family:'Syne',sans-serif; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:20px; }
+  .bar-item { margin-bottom:16px; }
+  .bar-label { display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text); margin-bottom:6px; }
+  .bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+
+  .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(7,16,30,.8); backdrop-filter:blur(6px); z-index:500; align-items:center; justify-content:center; }
+  .confirm-overlay.active { display:flex; }
+  .confirm-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px; max-width:380px; width:90%; text-align:center; }
+  .confirm-box h3 { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; margin-bottom:10px; }
+  .confirm-box p { color:var(--muted); font-size:0.875rem; font-weight:300; margin-bottom:28px; line-height:1.5; }
+  .confirm-btns { display:flex; gap:12px; justify-content:center; }
+  .btn-cancel { background:transparent; border:1px solid var(--border); color:var(--text); padding:10px 22px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:600; font-size:0.875rem; cursor:pointer; transition:all 0.2s; }
+  .btn-cancel:hover { border-color:var(--accent); }
+  .btn-delete { background:rgba(248,113,113,.15); border:1px solid rgba(248,113,113,.3); color:#f87171; padding:10px 22px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.875rem; cursor:pointer; transition:all 0.2s; }
+  .btn-delete:hover { background:rgba(248,113,113,.25); }
+
+  footer { position:relative; z-index:1; padding:32px 60px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .footer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; }
+  .footer-logo span { color:var(--accent); }
+  .footer-links { display:flex; gap:20px; }
+  .footer-links a { font-size:0.8rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .footer-links a:hover { color:var(--text); }
+
+  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  @media (max-width:900px) {
+    .page-wrap { grid-template-columns:1fr; }
+    .sidebar { height:auto; position:static; border-right:none; border-bottom:1px solid var(--border); }
+    .detail-pane { padding:32px 24px 60px; }
+    .detail-grid { grid-template-columns:1fr; }
+    nav{padding:16px 24px} .nav-links{display:none}
+    footer{flex-direction:column;gap:12px;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo"><div class="logo-dot"></div>Resume<span>IQ</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="analyzer.html" class="nav-cta">+ New Analysis</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">My Reports</div>
+      <div class="sidebar-sub" id="reportCount">Loading…</div>
+    </div>
+    <div class="sidebar-actions">
+      <a href="analyzer.html" class="btn-new">⚡ New Analysis</a>
+      <button class="btn-clear-all" onclick="promptClearAll()">Clear All</button>
+    </div>
+    <div class="report-list" id="reportList"></div>
+  </aside>
+
+  <main class="detail-pane" id="detailPane">
+    <div class="detail-empty" id="detailEmpty">
+      <div class="detail-empty-icon">📊</div>
+      <h2>Select a Report</h2>
+      <p>Choose a report from the list to view the full analysis, score breakdown, and recommendations.</p>
+      <a href="analyzer.html" class="btn-new" style="display:inline-flex;padding:12px 24px;border-radius:8px;font-size:0.9rem">⚡ Analyze a Resume</a>
+    </div>
+    <div class="report-detail" id="reportDetail" style="display:none"></div>
+  </main>
+</div>
+
+<footer>
+  <div class="footer-logo">Resume<span>IQ</span></div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="analyzer.html">Analyzer</a>
+    <a href="index.html#how">How It Works</a>
+  </div>
+</footer>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Delete Report?</h3>
+    <p>This will permanently remove this report from your saved history. This cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-delete" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let reports = JSON.parse(localStorage.getItem('resumeiq_reports') || '[]');
+  let activeId = null;
+  let pendingDeleteId = null;
+
+  function renderSidebar() {
+    const list = document.getElementById('reportList');
+    const count = document.getElementById('reportCount');
+    count.textContent = reports.length === 0 ? 'No reports yet' : reports.length + ' resume' + (reports.length === 1 ? '' : 's') + ' · 1 report each';
+
+    if (reports.length === 0) {
+      list.innerHTML = `<div class="sidebar-empty">
+        <div class="sidebar-empty-icon">📋</div>
+        <h4>No reports yet</h4>
+        <p>Analyze a resume to save your first report here.</p>
+        <a href="analyzer.html" class="btn-new" style="display:inline-flex;justify-content:center">⚡ Analyze Now</a>
+      </div>`;
+      return;
+    }
+
+    const sorted = [...reports].reverse();
+    list.innerHTML = sorted.map(r => `
+      <div class="report-list-item ${r.id === activeId ? 'active' : ''}" data-id="${r.id}" onclick="selectReport('${r.id}')">
+        <div class="rli-top">
+          <div class="rli-score">${r.score}/100</div>
+          <div class="rli-date">Updated ${new Date(r.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+        </div>
+        <div class="rli-role">${r.jobRole}</div>
+        <div class="rli-summary">${r.fileKey ? '📄 ' + r.fileKey : ''} ${r.summary}</div>
+        <button class="rli-delete" title="Delete" onclick="promptDelete(event,'${r.id}')">✕</button>
+      </div>`).join('');
+  }
+
+  function selectReport(id) {
+    activeId = id;
+    renderSidebar();
+    const r = reports.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('detailEmpty').style.display = 'none';
+    const detail = document.getElementById('reportDetail');
+    detail.style.display = 'block';
+
+    const mkItems = (arr, cls) => (arr||[]).map(t => `<div class="detail-item"><div class="detail-bullet ${cls}"></div><div>${t}</div></div>`).join('');
+
+    detail.innerHTML = `
+      <div class="report-detail">
+        <div class="detail-header">
+          <div class="detail-header-left">
+            <div class="detail-label">— Resume Analysis</div>
+            <div class="detail-role">${r.jobRole}</div>
+            <div class="detail-meta">📄 ${r.fileKey || 'resume'} · Last updated ${new Date(r.timestamp).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} at ${new Date(r.timestamp).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+          </div>
+          <div class="score-circle">
+            <div class="score-circle-num">${r.score}</div>
+            <div class="score-circle-label">Score</div>
+          </div>
+        </div>
+
+        <div class="summary-card">${r.summary}</div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card-header"><div class="detail-card-icon icon-green">✅</div><div class="detail-card-title">Strengths</div></div>
+            ${mkItems(r.strengths,'b-green')}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-header"><div class="detail-card-icon icon-red">⚠️</div><div class="detail-card-title">Weaknesses</div></div>
+            ${mkItems(r.weaknesses,'b-red')}
+          </div>
+          <div class="detail-card">
+            <div class="detail-card-header"><div class="detail-card-icon icon-yellow">💡</div><div class="detail-card-title">Suggestions</div></div>
+            ${mkItems(r.suggestions,'b-yellow')}
+          </div>
+        </div>
+
+        <div class="skills-block">
+          <div class="skills-block-title">🔧 Missing Skills to Add</div>
+          <div class="skills-wrap">${(r.missing_skills||[]).map(s=>`<div class="skill-tag">${s}</div>`).join('')}</div>
+        </div>
+
+        <div class="bars-block">
+          <div class="bars-block-title">📊 Score Breakdown</div>
+          ${barRow('Content Quality',    r.content_quality   || r.score)}
+          ${barRow('Skills Match',       r.skills_match      || Math.max(0, r.score-10))}
+          ${barRow('Structure & Format', r.structure_format  || Math.min(100, r.score+5))}
+          ${barRow('ATS Compatibility',  r.ats_compatibility || Math.max(0, r.score-15))}
+        </div>
+      </div>`;
+
+    document.getElementById('detailPane').scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function barRow(label, pct) {
+    pct = Math.min(100, Math.max(0, pct));
+    return `<div class="bar-item">
+      <div class="bar-label"><span>${label}</span><span>${pct}%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+
+  function promptDelete(e, id) {
+    e.stopPropagation();
+    pendingDeleteId = id;
+    document.getElementById('confirmOverlay').classList.add('active');
+  }
+  function closeConfirm() {
+    pendingDeleteId = null;
+    document.getElementById('confirmOverlay').classList.remove('active');
+  }
+  document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+    if (!pendingDeleteId) return;
+    reports = reports.filter(r => r.id !== pendingDeleteId);
+    localStorage.setItem('resumeiq_reports', JSON.stringify(reports));
+    if (activeId === pendingDeleteId) {
+      activeId = null;
+      document.getElementById('detailEmpty').style.display = '';
+      document.getElementById('reportDetail').style.display = 'none';
+    }
+    closeConfirm();
+    renderSidebar();
+  });
+
+  function promptClearAll() {
+    if (reports.length === 0) return;
+    pendingDeleteId = '__all__';
+    document.getElementById('confirmOverlay').classList.add('active');
+    document.querySelector('.confirm-box h3').textContent = 'Clear All Reports?';
+    document.querySelector('.confirm-box p').textContent = 'This will permanently delete all ' + reports.length + ' saved reports. This cannot be undone.';
+    document.getElementById('confirmDeleteBtn').onclick = () => {
+      reports = [];
+      localStorage.removeItem('resumeiq_reports');
+      activeId = null;
+      document.getElementById('detailEmpty').style.display = '';
+      document.getElementById('reportDetail').style.display = 'none';
+      closeConfirm();
+      renderSidebar();
+      document.querySelector('.confirm-box h3').textContent = 'Delete Report?';
+      document.querySelector('.confirm-box p').textContent = 'This will permanently remove this report from your saved history. This cannot be undone.';
+      document.getElementById('confirmDeleteBtn').onclick = null;
+    };
+  }
+
+  document.getElementById('confirmOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeConfirm(); });
+
+  function init() {
+    renderSidebar();
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id && reports.find(r => r.id === id)) selectReport(id);
+    else if (reports.length > 0) {
+      const latest = [...reports].reverse()[0];
+      selectReport(latest.id);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
