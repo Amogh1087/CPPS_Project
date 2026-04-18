@@ -1,180 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ResumeIQ — Analyzer</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #07101e; --surface: #0d1a2d; --surface2: #122038;
-    --border: #1c3050; --accent: #89c2e0; --accent2: #5294b5;
-    --accent3: #b8d8ec; --text: #d8eaf7; --muted: #456b85;
-    --glow: 0 0 40px rgba(137,194,224,0.12);
-  }
-  html { scroll-behavior: smooth; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0; opacity: 0.45;
-  }
-  body::after {
-    content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(137,194,224,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(137,194,224,0.04) 1px, transparent 1px);
-    background-size: 60px 60px; pointer-events: none; z-index: 0;
-  }
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --bg:#07101e; --surface:#0d1a2d; --surface2:#122038;
+  --border:#1c3050; --accent:#89c2e0; --accent2:#5294b5;
+  --accent3:#b8d8ec; --text:#d8eaf7; --muted:#456b85;
+  --green:#4ade80; --yellow:#fbbf24; --red:#f87171;
+  --glow:0 0 40px rgba(137,194,224,0.12);
+  --drawer-w:300px;
+}
+body.light {
+  --bg:#f0f5fa; --surface:#ffffff; --surface2:#e4ecf4;
+  --border:#c0d0e0; --accent:#1e6fa0; --accent2:#155880;
+  --accent3:#1e6fa0; --text:#0d1a2d; --muted:#4a6a88;
+}
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; transition:background 0.3s,color 0.3s; }
+body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.45; }
+body::after { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(137,194,224,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(137,194,224,0.04) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; z-index:0; }
 
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 60px; background: rgba(7,16,30,0.90);
-    backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
-  }
-  .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; letter-spacing:-0.03em; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:8px; }
-  .logo span { color:var(--accent); }
-  .logo-dot { width:8px; height:8px; background:var(--accent); border-radius:50%; box-shadow:0 0 14px var(--accent); animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-  .nav-links { display:flex; gap:36px; list-style:none; align-items:center; }
-  .nav-links a { font-size:0.875rem; font-weight:500; color:var(--muted); text-decoration:none; letter-spacing:0.02em; transition:color 0.2s; }
-  .nav-links a:hover { color:var(--text); }
+/* ── NAV ── */
+nav { position:fixed; top:0; left:0; right:0; z-index:300; display:flex; align-items:center; gap:16px; padding:18px 40px; background:rgba(7,16,30,.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); transition:background 0.3s; }
+body.light nav { background:rgba(240,245,250,.95); }
+.nav-menu-btn { background:none; border:none; cursor:pointer; display:flex; flex-direction:column; gap:5px; padding:6px; border-radius:6px; transition:background 0.2s; flex-shrink:0; }
+.nav-menu-btn:hover { background:rgba(137,194,224,.1); }
+.nav-menu-btn span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; }
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; letter-spacing:-0.03em; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:8px; flex:1; }
+.logo span { color:var(--accent); }
+.logo-dot { width:8px; height:8px; background:var(--accent); border-radius:50%; box-shadow:0 0 14px var(--accent); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.nav-links { display:flex; gap:32px; list-style:none; align-items:center; }
+.nav-links a { font-size:0.875rem; font-weight:500; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.nav-links a:hover { color:var(--text); }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:4px; background:none; border:none; }
+.hamburger span { display:block; width:24px; height:2px; background:var(--text); border-radius:2px; transition:all 0.3s; }
+.hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity:0; }
+.hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+.mobile-menu { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(7,16,30,.97); backdrop-filter:blur(20px); z-index:250; flex-direction:column; align-items:center; justify-content:center; gap:32px; }
+.mobile-menu.open { display:flex; }
+.mobile-menu a { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; color:var(--text); text-decoration:none; transition:color 0.2s; }
+.mobile-menu .m-cta { background:var(--accent); color:var(--bg) !important; padding:14px 36px; border-radius:10px; font-size:1.2rem !important; }
 
-  .page-header { position:relative; z-index:1; padding:140px 60px 60px; max-width:1000px; margin:0 auto; text-align:center; }
-  .page-glow { position:absolute; width:600px; height:400px; background:radial-gradient(ellipse,rgba(137,194,224,.07) 0%,transparent 70%); top:60px; left:50%; transform:translateX(-50%); pointer-events:none; }
-  .badge { display:inline-flex; align-items:center; gap:8px; background:rgba(137,194,224,.08); border:1px solid rgba(137,194,224,.22); padding:6px 16px; border-radius:100px; font-size:0.78rem; font-weight:500; color:var(--accent); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:28px; animation:fadeUp 0.6s ease both; }
-  .badge-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:pulse 1.5s infinite; }
-  .page-header h1 { font-family:'Syne',sans-serif; font-size:clamp(2.2rem,5vw,4rem); font-weight:800; letter-spacing:-0.04em; line-height:1.05; margin-bottom:16px; animation:fadeUp 0.7s ease 0.1s both; }
-  .page-header h1 span { background:linear-gradient(135deg,#b8d8ec,#89c2e0 40%,#5294b5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-  .page-header p { color:var(--muted); font-size:1.05rem; font-weight:300; line-height:1.7; max-width:480px; margin:0 auto; animation:fadeUp 0.7s ease 0.2s both; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+/* ── DRAWER (same as index) ── */
+.drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:490; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+.drawer-overlay.open { opacity:1; pointer-events:all; }
+.drawer { position:fixed; top:0; left:0; bottom:0; width:var(--drawer-w); background:var(--surface); border-right:1px solid var(--border); z-index:500; transform:translateX(-100%); transition:transform 0.3s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; overflow:hidden; }
+.drawer.open { transform:translateX(0); }
+.drawer-head { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.drawer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:-0.03em; color:var(--text); }
+.drawer-logo span { color:var(--accent); }
+.drawer-close { background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; padding:4px; border-radius:6px; transition:color 0.2s,background 0.2s; line-height:1; }
+.drawer-close:hover { color:var(--text); background:rgba(137,194,224,.08); }
+.drawer-body { flex:1; overflow-y:auto; padding:8px 0; }
+.drawer-body::-webkit-scrollbar { width:4px; }
+.drawer-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.d-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; font-size:0.9rem; font-weight:500; color:var(--text); transition:background 0.15s,color 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+.d-item:hover { background:rgba(137,194,224,.06); color:var(--accent); }
+.d-item .d-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+.d-item .d-label { flex:1; }
+.d-item .d-arrow { font-size:11px; color:var(--muted); transition:transform 0.2s; }
+.d-item.open .d-arrow { transform:rotate(90deg); }
+.d-sep { height:1px; background:var(--border); margin:8px 16px; }
+.d-section-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); padding:12px 20px 4px; font-weight:600; }
+.d-sub { display:none; padding-left:16px; border-left:2px solid var(--border); margin:2px 20px 6px; }
+.d-sub.open { display:block; }
+.d-sub-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; font-size:0.875rem; color:var(--muted); border-radius:8px; transition:background 0.15s,color 0.15s; text-decoration:none; border:none; background:none; width:100%; text-align:left; }
+.d-sub-item:hover { background:rgba(137,194,224,.06); color:var(--text); }
+.d-sub-item .d-icon { font-size:14px; }
+.theme-toggle { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer; border:none; background:none; width:100%; }
+.theme-toggle:hover { background:rgba(137,194,224,.06); }
+.theme-toggle .d-icon { font-size:14px; color:var(--muted); }
+.theme-toggle .tl { flex:1; font-size:0.875rem; color:var(--muted); text-align:left; }
+.toggle-track { width:36px; height:20px; background:var(--border); border-radius:10px; position:relative; transition:background 0.2s; flex-shrink:0; }
+.toggle-track.on { background:var(--accent); }
+.toggle-thumb { position:absolute; top:3px; left:3px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform 0.2s; }
+.toggle-track.on .toggle-thumb { transform:translateX(16px); }
+.account-panel { padding:12px; display:none; }
+.account-panel.open { display:block; }
+.acct-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:var(--bg); margin:0 auto 12px; }
+.acct-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; text-align:center; color:var(--text); margin-bottom:2px; }
+.acct-stat { font-size:0.75rem; color:var(--muted); text-align:center; margin-bottom:14px; }
+.acct-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85rem; outline:none; margin-bottom:8px; transition:border-color 0.2s; }
+.acct-input:focus { border-color:var(--accent); }
+.acct-input::placeholder { color:var(--muted); }
+.acct-save { width:100%; background:var(--accent); color:var(--bg); border:none; border-radius:8px; padding:9px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.85rem; cursor:pointer; transition:opacity 0.2s; }
+.acct-save:hover { opacity:0.85; }
+.help-panel { padding:12px; display:none; }
+.help-panel.open { display:block; }
+.faq-item { border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+.faq-q { padding:11px 14px; font-size:0.82rem; font-weight:600; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.15s; }
+.faq-q:hover { background:rgba(137,194,224,.06); }
+.faq-q span { font-size:10px; color:var(--muted); transition:transform 0.2s; }
+.faq-item.open .faq-q span { transform:rotate(180deg); }
+.faq-a { display:none; padding:0 14px 12px; font-size:0.8rem; color:var(--muted); line-height:1.55; }
+.faq-item.open .faq-a { display:block; }
+.d-new-report-btn { background:linear-gradient(135deg,var(--accent),#b8d8ec); color:var(--bg) !important; }
+.d-new-report-btn:hover { opacity:0.9; }
+.drawer-foot { padding:12px 16px; border-top:1px solid var(--border); flex-shrink:0; }
+.drawer-foot-note { font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.4; }
 
-  .upload-section { position:relative; z-index:1; padding:0 60px 60px; max-width:1000px; margin:0 auto; }
-  .upload-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:60px 48px; position:relative; transition:border-color 0.3s; animation:fadeUp 0.7s ease 0.3s both; }
-  .upload-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(137,194,224,.04),transparent 60%); pointer-events:none; border-radius:20px; z-index:0; }
-  .upload-card:hover { border-color:rgba(137,194,224,.32); }
+/* ── TOAST ── */
+#toast-container { position:fixed; top:90px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+.toast { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 18px; min-width:280px; max-width:380px; box-shadow:0 8px 32px rgba(0,0,0,.5); pointer-events:all; animation:toastIn 0.3s ease; font-size:0.875rem; color:var(--text); }
+.toast.toast-error { border-left:3px solid var(--red); }
+.toast.toast-success { border-left:3px solid var(--green); }
+.toast.toast-info { border-left:3px solid var(--accent); }
+.toast.toast-warn { border-left:3px solid var(--yellow); }
+.toast-icon { font-size:18px; flex-shrink:0; }
+.toast-msg { flex:1; line-height:1.4; }
+.toast-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; flex-shrink:0; }
+.toast-close:hover { color:var(--text); }
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+@keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(20px)} }
 
-  .drop-zone { border:2px dashed var(--border); border-radius:12px; padding:60px 40px; text-align:center; transition:all 0.3s; cursor:pointer; position:relative; }
-  .drop-zone:hover, .drop-zone.dragover { border-color:var(--accent); background:rgba(137,194,224,.04); }
-  .drop-icon { width:64px; height:64px; background:rgba(137,194,224,.1); border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:28px; }
-  .drop-zone h3 { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:8px; letter-spacing:-0.02em; }
-  .drop-zone p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
-  .file-input { display:none; }
-  .upload-btn { display:inline-flex; align-items:center; gap:8px; background:rgba(137,194,224,.1); border:1px solid rgba(137,194,224,.3); color:var(--accent); padding:11px 24px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:600; font-size:0.875rem; cursor:pointer; transition:all 0.2s; }
-  .upload-btn:hover { background:rgba(137,194,224,.18); box-shadow:0 0 20px rgba(137,194,224,.22); }
-  .file-formats { display:flex; gap:10px; justify-content:center; margin-top:20px; }
-  .fmt-tag { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:4px; border:1px solid var(--border); }
+/* ── PAGE HEADER ── */
+.page-header { position:relative; z-index:1; padding:140px 60px 60px; max-width:1000px; margin:0 auto; text-align:center; }
+.page-glow { position:absolute; width:600px; height:400px; background:radial-gradient(ellipse,rgba(137,194,224,.07) 0%,transparent 70%); top:60px; left:50%; transform:translateX(-50%); pointer-events:none; }
+.page-header h1 { font-family:'Syne',sans-serif; font-size:clamp(2.2rem,5vw,4rem); font-weight:800; letter-spacing:-0.04em; line-height:1.05; margin-bottom:16px; animation:fadeUp 0.7s ease both; }
+.page-header h1 span { background:linear-gradient(135deg,#b8d8ec,#89c2e0 40%,#5294b5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.page-header p { color:var(--muted); font-size:1.05rem; font-weight:300; line-height:1.7; max-width:480px; margin:0 auto; animation:fadeUp 0.7s ease 0.1s both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 
-  .role-input-wrap { margin-top:32px; display:flex; gap:16px; align-items:flex-end; position:relative; z-index:10; }
-  .input-group { flex:1; position:relative; }
-  .input-group label { display:block; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:10px; font-weight:500; }
-  .input-group input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 44px 14px 18px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.95rem; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
-  .input-group input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(137,194,224,.1); }
-  .input-group input::placeholder { color:var(--muted); }
+/* ── UPLOAD ── */
+.upload-section { position:relative; z-index:1; padding:0 60px 60px; max-width:1000px; margin:0 auto; }
+.upload-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:60px 48px; position:relative; transition:border-color 0.3s; animation:fadeUp 0.7s ease 0.2s both; }
+.upload-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(137,194,224,.04),transparent 60%); pointer-events:none; border-radius:20px; z-index:0; }
+.upload-card:hover { border-color:rgba(137,194,224,.32); }
+.drop-zone { border:2px dashed var(--border); border-radius:12px; padding:60px 40px; text-align:center; transition:all 0.3s; cursor:pointer; }
+.drop-zone:hover,.drop-zone.dragover { border-color:var(--accent); background:rgba(137,194,224,.04); }
+.drop-icon { width:64px; height:64px; background:rgba(137,194,224,.1); border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:28px; }
+.drop-zone h3 { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; margin-bottom:8px; letter-spacing:-0.02em; }
+.drop-zone p { color:var(--muted); font-size:0.9rem; margin-bottom:24px; }
+.file-input { display:none; }
+.upload-btn { display:inline-flex; align-items:center; gap:8px; background:rgba(137,194,224,.1); border:1px solid rgba(137,194,224,.3); color:var(--accent); padding:11px 24px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:600; font-size:0.875rem; cursor:pointer; transition:all 0.2s; }
+.upload-btn:hover { background:rgba(137,194,224,.18); box-shadow:0 0 20px rgba(137,194,224,.22); }
+.file-formats { display:flex; gap:10px; justify-content:center; margin-top:20px; }
+.fmt-tag { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); background:var(--surface2); padding:4px 10px; border-radius:4px; border:1px solid var(--border); }
 
-  .input-chevron {
-    position:absolute; right:14px; bottom:14px; color:var(--muted);
-    font-size:13px; line-height:1; cursor:pointer;
-    transition:transform 0.2s, color 0.2s;
-    user-select:none; padding:2px 4px;
-  }
-  .input-chevron:hover { color:var(--accent); }
-  .input-chevron.open { transform:rotate(180deg); color:var(--accent); }
+/* File selected */
+.file-selected { display:none; align-items:center; gap:14px; padding:16px 20px; background:rgba(137,194,224,.06); border:1px solid rgba(137,194,224,.2); border-radius:10px; margin-top:16px; }
+.file-selected.active { display:flex; }
+.file-icon-sm { font-size:28px; flex-shrink:0; }
+.file-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.file-name { font-size:0.9rem; font-weight:500; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-size { font-size:0.75rem; color:var(--muted); }
+.remove-file { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; transition:color 0.2s,background 0.2s; flex-shrink:0; width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.remove-file:hover { color:#f87171; background:rgba(248,113,113,.1); }
 
-  .role-dropdown {
-    display:none; position:fixed;
-    background:var(--surface2); border:1px solid rgba(137,194,224,.22);
-    border-radius:10px; max-height:280px; overflow-y:auto;
-    z-index:99999; box-shadow:0 20px 60px rgba(0,0,0,.7);
-  }
-  .role-dropdown.open { display:block; }
-  .role-dropdown::-webkit-scrollbar { width:4px; }
-  .role-dropdown::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-  .dropdown-category { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); padding:10px 14px 4px; font-weight:600; border-top:1px solid var(--border); margin-top:2px; }
-  .dropdown-category:first-child { border-top:none; margin-top:0; }
-  .dropdown-item { padding:9px 14px; font-size:0.875rem; color:var(--text); cursor:pointer; transition:background 0.12s,color 0.12s; border-radius:6px; margin:1px 4px; }
-  .dropdown-item:hover { background:rgba(137,194,224,.1); color:var(--accent); }
-  .dropdown-empty { padding:16px 14px; font-size:0.875rem; color:var(--muted); text-align:center; }
+/* Max size warning — shown below file-selected */
+.file-size-warning { display:none; align-items:center; gap:7px; margin-top:8px; padding:7px 14px; background:rgba(251,191,36,.06); border:1px solid rgba(251,191,36,.2); border-radius:7px; font-size:0.78rem; color:var(--yellow); }
+.file-size-warning.visible { display:flex; }
 
-  .analyze-btn { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--accent),#b8d8ec); color:var(--bg); border:none; padding:14px 32px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; white-space:nowrap; }
-  .analyze-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(137,194,224,.35); }
-  .analyze-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+/* Job Role */
+.role-input-wrap { margin-top:32px; display:flex; gap:16px; align-items:flex-end; position:relative; z-index:10; }
+.input-group { flex:1; position:relative; }
+.input-group label { display:block; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:10px; font-weight:500; }
+.input-group input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 44px 14px 18px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.95rem; outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
+.input-group input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(137,194,224,.1); }
+.input-group input::placeholder { color:var(--muted); }
+.input-chevron { position:absolute; right:14px; bottom:14px; color:var(--muted); font-size:13px; line-height:1; cursor:pointer; transition:transform 0.2s,color 0.2s; user-select:none; padding:2px 4px; }
+.input-chevron:hover { color:var(--accent); }
+.input-chevron.open { transform:rotate(180deg); color:var(--accent); }
+.role-dropdown { display:none; position:fixed; background:var(--surface2); border:1px solid rgba(137,194,224,.22); border-radius:10px; max-height:280px; overflow-y:auto; z-index:99999; box-shadow:0 20px 60px rgba(0,0,0,.7); }
+.role-dropdown.open { display:block; }
+.role-dropdown::-webkit-scrollbar { width:4px; }
+.role-dropdown::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.dropdown-category { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); padding:10px 14px 4px; font-weight:600; border-top:1px solid var(--border); }
+.dropdown-category:first-child { border-top:none; }
+.dropdown-item { padding:9px 14px; font-size:0.875rem; color:var(--text); cursor:pointer; transition:background 0.12s,color 0.12s; border-radius:6px; margin:1px 4px; }
+.dropdown-item:hover { background:rgba(137,194,224,.1); color:var(--accent); }
+.dropdown-empty { padding:16px 14px; font-size:0.875rem; color:var(--muted); text-align:center; }
+.analyze-btn { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--accent),#b8d8ec); color:var(--bg); border:none; padding:14px 32px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; white-space:nowrap; }
+.analyze-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(137,194,224,.35); }
+.analyze-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; box-shadow:none; }
 
-  .file-selected { display:none; align-items:center; gap:16px; padding:18px 24px; background:rgba(137,194,224,.06); border:1px solid rgba(137,194,224,.2); border-radius:10px; margin-top:16px; }
-  .file-selected.active { display:flex; }
-  .file-icon-sm { font-size:24px; }
-  .file-name { font-size:0.9rem; font-weight:500; color:var(--text); flex:1; }
-  .file-size { font-size:0.78rem; color:var(--muted); }
-  .remove-file { background:none; border:none; color:var(--muted); cursor:pointer; font-size:18px; transition:color 0.2s; }
-  .remove-file:hover { color:var(--accent3); }
+/* ── LOADING ── */
+.loading-overlay { display:none; position:absolute; inset:0; background:rgba(7,16,30,.94); backdrop-filter:blur(6px); border-radius:20px; align-items:center; justify-content:center; flex-direction:column; gap:20px; z-index:10; }
+.loading-overlay.active { display:flex; }
+.loader { width:52px; height:52px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-text { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; color:var(--accent); transition:opacity 0.4s; }
+.loading-sub { font-size:0.85rem; color:var(--muted); }
+.loading-steps { display:flex; gap:8px; margin-top:4px; }
+.loading-dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:background 0.3s; }
+.loading-dot.active { background:var(--accent); }
 
-  .loading-overlay { display:none; position:absolute; inset:0; background:rgba(7,16,30,.93); backdrop-filter:blur(4px); border-radius:20px; align-items:center; justify-content:center; flex-direction:column; gap:20px; z-index:10; }
-  .loading-overlay.active { display:flex; }
-  .loader { width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  .loading-text { font-family:'Syne',sans-serif; font-weight:600; font-size:1rem; color:var(--accent); }
-  .loading-sub { font-size:0.85rem; color:var(--muted); margin-top:-12px; }
+/* ── RESULTS ── */
+.results-section { display:none; position:relative; z-index:1; padding:0 60px 40px; max-width:1000px; margin:0 auto; }
+.results-section.active { display:block; }
+.results-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); gap:20px; flex-wrap:wrap; }
+.section-label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent); font-weight:600; margin-bottom:8px; }
+.results-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; }
+.results-file { font-size:0.82rem; color:var(--muted); margin-top:6px; display:flex; align-items:center; gap:6px; }
+.score-badge-large { display:flex; flex-direction:column; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; border:3px solid var(--score-color,var(--accent)); box-shadow:0 0 30px color-mix(in srgb,var(--score-color,var(--accent)) 30%,transparent); background:color-mix(in srgb,var(--score-color,var(--accent)) 8%,transparent); flex-shrink:0; transition:all 0.6s; }
+.score-num { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--score-color,var(--accent)); line-height:1; transition:color 0.6s; }
+.score-label-sm { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+.score-grade { font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--score-color,var(--accent)); margin-top:4px; }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:12px; padding:24px 28px; margin-bottom:28px; font-size:0.95rem; color:var(--muted); line-height:1.7; font-weight:300; font-style:italic; }
+.results-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:28px; }
+.result-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; transition:border-color 0.2s; }
+.result-card:hover { border-color:rgba(137,194,224,.2); }
+.result-card-header { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+.result-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+.icon-green{background:rgba(74,222,128,.12)} .icon-red{background:rgba(248,113,113,.12)} .icon-yellow{background:rgba(251,191,36,.12)}
+.result-card-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+.result-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(137,194,224,.05); font-size:0.875rem; color:var(--text); line-height:1.5; font-weight:300; }
+.result-item:last-child { border-bottom:none; }
+.result-bullet { width:6px; height:6px; border-radius:50%; margin-top:7px; flex-shrink:0; }
+.bullet-green{background:#4ade80} .bullet-red{background:#f87171} .bullet-yellow{background:#fbbf24}
+.skills-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; margin-bottom:28px; }
+.skills-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:18px; }
+.skills-wrap { display:flex; flex-wrap:wrap; gap:10px; }
+.skill-tag { background:rgba(137,194,224,.07); border:1px solid rgba(137,194,224,.2); color:var(--accent3); padding:7px 16px; border-radius:6px; font-size:0.82rem; font-weight:500; transition:all 0.2s; }
+.skill-tag:hover { background:rgba(137,194,224,.14); border-color:rgba(137,194,224,.4); }
+.score-bar-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; margin-bottom:28px; }
+.score-bar-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:24px; }
+.score-bar-item { margin-bottom:18px; }
+.score-bar-label { display:flex; justify-content:space-between; font-size:0.83rem; color:var(--text); margin-bottom:8px; }
+.score-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+.score-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 1.2s ease; width:0; }
+.report-actions { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:60px; }
+.btn-save-report { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--accent),#b8d8ec); color:var(--bg); border:none; padding:14px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; }
+.btn-save-report:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(137,194,224,.35); }
+.btn-outline { display:inline-flex; align-items:center; gap:10px; background:transparent; color:var(--text); padding:13px 24px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:600; font-size:0.9rem; text-decoration:none; border:1px solid var(--border); transition:border-color 0.2s,background 0.2s; cursor:pointer; }
+.btn-outline:hover { border-color:var(--accent); background:rgba(137,194,224,.06); color:var(--text); }
 
-  .results-section { display:none; position:relative; z-index:1; padding:0 60px 40px; max-width:1000px; margin:0 auto; }
-  .results-section.active { display:block; }
-  .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
-  .section-label { font-size:0.75rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--accent); font-weight:600; margin-bottom:8px; }
-  .results-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; letter-spacing:-0.03em; }
-  .score-badge-large { display:flex; flex-direction:column; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; border:3px solid var(--accent); box-shadow:0 0 30px rgba(137,194,224,.28); background:rgba(137,194,224,.07); }
-  .score-num { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--accent); line-height:1; }
-  .score-label-sm { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
-  .summary-card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:12px; padding:24px 28px; margin-bottom:28px; font-size:0.95rem; color:var(--muted); line-height:1.7; font-weight:300; font-style:italic; }
-  .results-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:28px; }
-  .result-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; transition:border-color 0.2s; }
-  .result-card:hover { border-color:rgba(137,194,224,.2); }
-  .result-card-header { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
-  .result-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
-  .icon-green{background:rgba(74,222,128,.12)} .icon-red{background:rgba(248,113,113,.12)} .icon-yellow{background:rgba(251,191,36,.12)}
-  .result-card-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
-  .result-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(137,194,224,.05); font-size:0.875rem; color:var(--text); line-height:1.5; font-weight:300; }
-  .result-item:last-child { border-bottom:none; }
-  .result-bullet { width:6px; height:6px; border-radius:50%; margin-top:7px; flex-shrink:0; }
-  .bullet-green{background:#4ade80} .bullet-red{background:#f87171} .bullet-yellow{background:#fbbf24}
-  .skills-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; margin-bottom:28px; }
-  .skills-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:18px; display:flex; align-items:center; gap:10px; }
-  .skills-wrap { display:flex; flex-wrap:wrap; gap:10px; }
-  .skill-tag { background:rgba(137,194,224,.07); border:1px solid rgba(137,194,224,.2); color:var(--accent3); padding:7px 16px; border-radius:6px; font-size:0.82rem; font-weight:500; transition:all 0.2s; }
-  .skill-tag:hover { background:rgba(137,194,224,.14); border-color:rgba(137,194,224,.4); }
-  .score-bar-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; margin-bottom:28px; }
-  .score-bar-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:24px; }
-  .score-bar-item { margin-bottom:18px; }
-  .score-bar-label { display:flex; justify-content:space-between; font-size:0.83rem; color:var(--text); margin-bottom:8px; }
-  .score-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
-  .score-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 1s ease; width:0; }
+footer { position:relative; z-index:1; padding:48px 60px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.footer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; }
+.footer-logo span { color:var(--accent); }
+.footer-links { display:flex; gap:24px; }
+.footer-links a { font-size:0.82rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.footer-links a:hover { color:var(--text); }
 
-  .report-actions { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:60px; }
-  .btn-save-report { display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,var(--accent),#b8d8ec); color:var(--bg); border:none; padding:14px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; text-decoration:none; }
-  .btn-save-report:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(137,194,224,.35); }
-  .btn-view-reports { display:inline-flex; align-items:center; gap:10px; background:transparent; color:var(--text); padding:14px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:600; font-size:0.9rem; text-decoration:none; border:1px solid var(--border); transition:border-color 0.2s,background 0.2s; }
-  .btn-view-reports:hover { border-color:var(--accent); background:rgba(137,194,224,.06); }
-  .save-status { font-size:0.85rem; color:#4ade80; font-weight:500; display:none; align-items:center; gap:6px; }
-  .save-status.visible { display:flex; }
+::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-  footer { position:relative; z-index:1; padding:48px 60px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-  .footer-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:-0.03em; }
-  .footer-logo span { color:var(--accent); }
-  .footer-links { display:flex; gap:24px; }
-  .footer-links a { font-size:0.82rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
-  .footer-links a:hover { color:var(--text); }
-
-  ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-
-  @media (max-width:768px) {
-    nav{padding:16px 24px} .nav-links{display:none}
-    .page-header,.upload-section,.results-section{padding-left:24px;padding-right:24px}
-    .results-grid{grid-template-columns:1fr} .role-input-wrap{flex-direction:column}
-    footer{flex-direction:column;gap:16px;text-align:center}
-  }
+@media (max-width:768px) {
+  nav{padding:14px 20px} .nav-links{display:none} .hamburger{display:flex}
+  .page-header,.upload-section,.results-section{padding-left:24px;padding-right:24px}
+  .page-header{padding-top:110px} .upload-card{padding:32px 24px}
+  .results-grid{grid-template-columns:1fr} .role-input-wrap{flex-direction:column}
+  .report-actions{flex-direction:column;align-items:stretch}
+  .btn-save-report,.btn-outline{justify-content:center}
+  footer{flex-direction:column;gap:16px;text-align:center;padding:32px 24px}
+}
 </style>
 </head>
 <body>
 
+<div id="toast-container"></div>
+
+<!-- ── DRAWER ── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-logo">Resume<span>IQ</span></div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="d-section-label">Quick Actions</div>
+    <button class="d-item d-new-report-btn" onclick="handleNewReport()">
+      <span class="d-icon">📝</span><span class="d-label">New Report</span>
+    </button>
+    <div class="d-sep"></div>
+    <div class="d-section-label">Navigation</div>
+    <a href="index.html" class="d-item"><span class="d-icon">🏠</span><span class="d-label">Home</span></a>
+    <a href="analyzer.html" class="d-item"><span class="d-icon">🔍</span><span class="d-label">Analyze Resume</span></a>
+    <a href="report.html" class="d-item"><span class="d-icon">📋</span><span class="d-label">My Reports</span></a>
+    <div class="d-sep"></div>
+    <div class="d-section-label">Settings</div>
+    <button class="d-item" id="settingsToggle" onclick="toggleSettings()">
+      <span class="d-icon">⚙️</span><span class="d-label">Settings</span><span class="d-arrow">▶</span>
+    </button>
+    <div class="d-sub" id="settingsSub">
+      <button class="d-sub-item" onclick="toggleAccount()"><span class="d-icon">👤</span> Your Account</button>
+      <div class="account-panel" id="accountPanel">
+        <div class="acct-avatar" id="acctInitial">?</div>
+        <div class="acct-name" id="acctName">Guest User</div>
+        <div class="acct-stat" id="acctStat">0 analyses done</div>
+        <input class="acct-input" id="acctNameInput" placeholder="Your name…" maxlength="30"/>
+        <input class="acct-input" id="acctEmailInput" placeholder="Email (optional)…" maxlength="60"/>
+        <button class="acct-save" onclick="saveAccount()">Save</button>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="d-icon">🌓</span>
+        <span class="tl">Light Mode</span>
+        <div class="toggle-track" id="themeTrack"><div class="toggle-thumb"></div></div>
+      </button>
+      <button class="d-sub-item" onclick="toggleHelp()"><span class="d-icon">❓</span> Get Help</button>
+      <div class="help-panel" id="helpPanel">
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How do I analyze my resume? <span>▼</span></div><div class="faq-a">Upload a PDF or DOCX, type your target job role, then click "Analyze Now". Results appear within 30 seconds.</div></div>
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What file formats work? <span>▼</span></div><div class="faq-a">PDF and DOCX up to 5 MB. Ensure your PDF has selectable text (not a scanned image).</div></div>
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How is my score calculated? <span>▼</span></div><div class="faq-a">The AI evaluates Content Quality, Skills Match, Structure & Format, and ATS Compatibility — scored 0–100 each.</div></div>
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Is my data stored? <span>▼</span></div><div class="faq-a">No. Resume text is only used for analysis and never stored on any server. Reports live in your browser's local storage only.</div></div>
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What is ATS? <span>▼</span></div><div class="faq-a">Applicant Tracking System — software employers use to filter resumes before a human reads them. High ATS score = better keyword and format alignment.</div></div>
+        <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How to improve my score? <span>▼</span></div><div class="faq-a">Follow the Suggestions list and add Missing Skills. Quantify achievements, use clear section headers, and match keywords to the job role.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-foot"><div class="drawer-foot-note">ResumeIQ · All data stored locally</div></div>
+</div>
+
 <nav>
+  <button class="nav-menu-btn" onclick="openDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
   <a href="index.html" class="logo"><div class="logo-dot"></div>Resume<span>IQ</span></a>
   <ul class="nav-links">
     <li><a href="index.html#how">How It Works</a></li>
@@ -182,11 +318,18 @@
     <li><a href="report.html">📋 My Reports</a></li>
     <li><a href="index.html" style="color:var(--muted)">← Home</a></li>
   </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
 </nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#how" onclick="closeMobileMenu()">How It Works</a>
+  <a href="index.html#features" onclick="closeMobileMenu()">Features</a>
+  <a href="report.html" onclick="closeMobileMenu()">My Reports</a>
+  <a href="index.html" class="m-cta" onclick="closeMobileMenu()">← Home</a>
+</div>
 
 <div class="page-header">
   <div class="page-glow"></div>
-  <div class="badge"><div class="badge-dot"></div>Powered by Google Gemini AI</div>
   <h1>Drop Your Resume.<br/><span>Get Instant Feedback.</span></h1>
   <p>Our AI reads your resume like a hiring manager — and tells you exactly what to fix.</p>
 </div>
@@ -195,27 +338,46 @@
   <div class="upload-card" id="uploadCard">
     <div class="loading-overlay" id="loadingOverlay">
       <div class="loader"></div>
-      <div class="loading-text">Analyzing Resume…</div>
+      <div class="loading-text" id="loadingText">Reading your resume…</div>
       <div class="loading-sub">This takes about 10–20 seconds</div>
+      <div class="loading-steps">
+        <div class="loading-dot active" id="dot0"></div>
+        <div class="loading-dot" id="dot1"></div>
+        <div class="loading-dot" id="dot2"></div>
+        <div class="loading-dot" id="dot3"></div>
+      </div>
     </div>
+
     <div class="drop-zone" id="dropZone">
       <div class="drop-icon">📄</div>
       <h3>Drag & drop your resume here</h3>
       <p>or click to browse your files</p>
       <label for="fileInput" class="upload-btn">📂 Choose File</label>
       <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx"/>
-      <div class="file-formats"><span class="fmt-tag">PDF</span><span class="fmt-tag">DOCX</span></div>
+      <div class="file-formats">
+        <span class="fmt-tag">PDF</span>
+        <span class="fmt-tag">DOCX</span>
+      </div>
     </div>
+
     <div class="file-selected" id="fileSelected">
       <div class="file-icon-sm">📄</div>
-      <div class="file-name" id="fileName">resume.pdf</div>
-      <div class="file-size" id="fileSize">240 KB</div>
-      <button class="remove-file" id="removeFile">✕</button>
+      <div class="file-info">
+        <div class="file-name" id="fileName">resume.pdf</div>
+        <div class="file-size" id="fileSize">240 KB</div>
+      </div>
+      <button class="remove-file" id="removeFile" title="Remove">✕</button>
     </div>
+
+    <!-- Max size warning — shown below selected file -->
+    <div class="file-size-warning" id="fileSizeWarning">
+      ⚠️ Max Size — 5 MB
+    </div>
+
     <div class="role-input-wrap">
       <div class="input-group">
         <label>Target Job Role</label>
-        <input type="text" id="jobRole" placeholder="Search or type a job role…" autocomplete="off"/>
+        <input type="text" id="jobRole" placeholder="Type a job role to search…" autocomplete="off"/>
         <span class="input-chevron" id="chevron" title="Toggle list">▼</span>
         <div class="role-dropdown" id="roleDropdown"></div>
       </div>
@@ -224,36 +386,27 @@
   </div>
 </section>
 
+<!-- RESULTS -->
 <div class="results-section" id="resultsSection">
   <div class="results-header">
-    <div>
+    <div class="results-header-left">
       <div class="section-label">— Analysis Complete</div>
       <div class="results-title">Your Resume Report</div>
+      <div class="results-file" id="resultsFile">📄 <span id="resultsFileName">—</span></div>
     </div>
-    <div class="score-badge-large">
+    <div class="score-badge-large" id="scoreBadge">
       <div class="score-num" id="scoreNum">--</div>
-      <div class="score-label-sm">Score</div>
+      <div class="score-label-sm">/ 100</div>
+      <div class="score-grade" id="scoreGrade">—</div>
     </div>
   </div>
   <div class="summary-card" id="summaryCard"></div>
   <div class="results-grid">
-    <div class="result-card">
-      <div class="result-card-header"><div class="result-icon icon-green">✅</div><div class="result-card-title">Strengths</div></div>
-      <div id="strengthsList"></div>
-    </div>
-    <div class="result-card">
-      <div class="result-card-header"><div class="result-icon icon-red">⚠️</div><div class="result-card-title">Weaknesses</div></div>
-      <div id="weaknessesList"></div>
-    </div>
-    <div class="result-card">
-      <div class="result-card-header"><div class="result-icon icon-yellow">💡</div><div class="result-card-title">Suggestions</div></div>
-      <div id="suggestionsList"></div>
-    </div>
+    <div class="result-card"><div class="result-card-header"><div class="result-icon icon-green">✅</div><div class="result-card-title">Strengths</div></div><div id="strengthsList"></div></div>
+    <div class="result-card"><div class="result-card-header"><div class="result-icon icon-red">⚠️</div><div class="result-card-title">Weaknesses</div></div><div id="weaknessesList"></div></div>
+    <div class="result-card"><div class="result-card-header"><div class="result-icon icon-yellow">💡</div><div class="result-card-title">Suggestions</div></div><div id="suggestionsList"></div></div>
   </div>
-  <div class="skills-card">
-    <div class="skills-title">🔧 Missing Skills to Add</div>
-    <div class="skills-wrap" id="skillsWrap"></div>
-  </div>
+  <div class="skills-card"><div class="skills-title">🔧 Missing Skills to Add</div><div class="skills-wrap" id="skillsWrap"></div></div>
   <div class="score-bar-card">
     <div class="score-bar-title">📊 Score Breakdown</div>
     <div class="score-bar-item"><div class="score-bar-label"><span>Content Quality</span><span id="bar1val">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="bar1"></div></div></div>
@@ -261,285 +414,362 @@
     <div class="score-bar-item"><div class="score-bar-label"><span>Structure & Format</span><span id="bar3val">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="bar3"></div></div></div>
     <div class="score-bar-item"><div class="score-bar-label"><span>ATS Compatibility</span><span id="bar4val">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="bar4"></div></div></div>
   </div>
-
   <div class="report-actions">
-    <button class="btn-save-report" id="saveReportBtn" onclick="saveAndViewReport()">💾 Save & View Full Report</button>
-    <a href="report.html" class="btn-view-reports">📋 All My Reports</a>
-    <div class="save-status" id="saveStatus">✓ Report saved!</div>
+    <button class="btn-save-report" onclick="saveAndViewReport()">💾 Save & View Full Report</button>
+    <a href="report.html" class="btn-outline">📋 All My Reports</a>
+    <button class="btn-outline" onclick="analyzeAgain()">🔄 Analyze Again</button>
   </div>
 </div>
 
 <footer>
   <div class="footer-logo">Resume<span>IQ</span></div>
   <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="index.html#how">How It Works</a>
-    <a href="report.html">My Reports</a>
+    <a href="index.html">Home</a><a href="index.html#how">How It Works</a><a href="report.html">My Reports</a>
   </div>
 </footer>
 
 <script>
-  const JOB_ROLES = {
-    "Technology":["Software Engineer","Frontend Developer","Backend Developer","Full Stack Developer","Mobile App Developer","iOS Developer","Android Developer","DevOps Engineer","Cloud Engineer","Site Reliability Engineer","Data Engineer","Data Scientist","Machine Learning Engineer","AI Engineer","Cybersecurity Analyst","Network Engineer","Database Administrator","QA Engineer","Embedded Systems Engineer","Blockchain Developer"],
-    "Data & Analytics":["Data Analyst","Business Intelligence Analyst","Data Architect","Quantitative Analyst","Research Scientist","Statistician","Analytics Engineer","Reporting Analyst"],
-    "Design & Creative":["UI/UX Designer","Graphic Designer","Product Designer","Motion Designer","Brand Designer","Web Designer","Visual Designer","3D Artist","Illustrator","Content Creator"],
-    "Product & Management":["Product Manager","Project Manager","Scrum Master","Agile Coach","Program Manager","Technical Program Manager","Product Owner","Operations Manager"],
-    "Business & Finance":["Business Analyst","Financial Analyst","Investment Banker","Chartered Accountant","Auditor","Tax Consultant","Management Consultant","Strategy Consultant","Risk Analyst","Actuary","Credit Analyst","Compliance Officer"],
-    "Marketing & Sales":["Digital Marketing Specialist","SEO Specialist","Content Marketer","Social Media Manager","Growth Hacker","Sales Executive","Account Manager","Brand Manager","Performance Marketer","Email Marketing Specialist"],
-    "Healthcare":["Medical Doctor","Nurse","Pharmacist","Physiotherapist","Radiologist","Clinical Data Analyst","Healthcare Administrator","Biomedical Engineer"],
-    "Engineering & Manufacturing":["Mechanical Engineer","Civil Engineer","Electrical Engineer","Chemical Engineer","Aerospace Engineer","Structural Engineer","Industrial Engineer","Environmental Engineer","Production Engineer","Quality Control Engineer"],
-    "Education & Research":["Teacher","Lecturer","Research Analyst","Academic Researcher","Curriculum Developer","Instructional Designer","Education Counselor"],
-    "Legal & HR":["Lawyer","Legal Advisor","Human Resources Manager","Talent Acquisition Specialist","Recruiter","Payroll Specialist","Labor Relations Specialist"]
-  };
+// ── Theme (apply immediately) ─────────────────────────────────────
+(function(){ if(localStorage.getItem('resumeiq_theme')==='light') document.body.classList.add('light'); })();
 
-  const jobRoleInput = document.getElementById('jobRole');
-  const roleDropdown = document.getElementById('roleDropdown');
-  const chevron      = document.getElementById('chevron');
-  let dropdownOpen   = false;
+// ── Drawer ────────────────────────────────────────────────────────
+function openDrawer()  { document.getElementById('drawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open'); document.body.style.overflow='hidden'; loadAccount(); }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); document.body.style.overflow=''; }
+function toggleSettings() { document.getElementById('settingsToggle').classList.toggle('open'); document.getElementById('settingsSub').classList.toggle('open'); }
+function toggleAccount() { document.getElementById('accountPanel').classList.toggle('open'); document.getElementById('helpPanel').classList.remove('open'); }
+function toggleHelp()    { document.getElementById('helpPanel').classList.toggle('open'); document.getElementById('accountPanel').classList.remove('open'); }
+function toggleFaq(el)   { el.classList.toggle('open'); }
 
-  function buildDropdown(filter) {
-    roleDropdown.innerHTML = '';
-    let count = 0;
-    const q = filter.toLowerCase().trim();
-    for (const [cat, roles] of Object.entries(JOB_ROLES)) {
-      const matches = roles.filter(r => !q || r.toLowerCase().includes(q));
-      if (!matches.length) continue;
-      const catEl = document.createElement('div');
-      catEl.className = 'dropdown-category';
-      catEl.textContent = cat;
-      roleDropdown.appendChild(catEl);
-      matches.forEach(role => {
-        const item = document.createElement('div');
-        item.className = 'dropdown-item';
-        item.textContent = role;
-        item.addEventListener('mousedown', e => {
-          e.preventDefault();
-          jobRoleInput.value = role;
-          closeDropdown();
-        });
-        roleDropdown.appendChild(item);
-        count++;
-      });
+function loadAccount() {
+  const name  = localStorage.getItem('resumeiq_name') || '';
+  const email = localStorage.getItem('resumeiq_email') || '';
+  const count = parseInt(localStorage.getItem('resumeiq_count') || '0');
+  document.getElementById('acctNameInput').value  = name;
+  document.getElementById('acctEmailInput').value = email;
+  document.getElementById('acctName').textContent = name || 'Guest User';
+  document.getElementById('acctInitial').textContent = name ? name[0].toUpperCase() : '?';
+  document.getElementById('acctStat').textContent = count + ' anal' + (count===1?'ysis':'yses') + ' done';
+}
+function saveAccount() {
+  const name  = document.getElementById('acctNameInput').value.trim();
+  const email = document.getElementById('acctEmailInput').value.trim();
+  if (name)  localStorage.setItem('resumeiq_name', name);
+  if (email) localStorage.setItem('resumeiq_email', email);
+  loadAccount();
+  document.getElementById('accountPanel').classList.remove('open');
+  showToast('Account details saved!', 'success', 2500);
+}
+
+function applyTheme(light) {
+  document.body.classList.toggle('light', light);
+  document.getElementById('themeTrack').classList.toggle('on', light);
+  localStorage.setItem('resumeiq_theme', light ? 'light' : 'dark');
+}
+function toggleTheme() { applyTheme(!document.body.classList.contains('light')); }
+(function(){ applyTheme(localStorage.getItem('resumeiq_theme')==='light'); })();
+
+// ── New Report ────────────────────────────────────────────────────
+function handleNewReport() {
+  const reports = JSON.parse(localStorage.getItem('resumeiq_reports') || '[]');
+  if (reports.length > 0) {
+    const latest  = [...reports].reverse()[0];
+    const success = downloadReport(latest);
+    if (!success) {
+      showToast('Previous updated report downloaded.', 'info', 4000);
+      setTimeout(() => downloadReport(latest), 300);
     }
-    if (count === 0) roleDropdown.innerHTML = `<div class="dropdown-empty">No match — your custom role will be used ✓</div>`;
+    localStorage.removeItem('resumeiq_reports');
   }
+  closeDrawer();
+  setTimeout(() => {
+    clearReport();
+    window.scrollTo({ top: 0, behavior:'smooth' });
+  }, 350);
+}
+function downloadReport(r) {
+  try {
+    const lines = [
+      'ResumeIQ — Resume Analysis Report',
+      '='.repeat(40),
+      'Role:  ' + r.jobRole,
+      'Score: ' + r.score + '/100',
+      'Date:  ' + new Date(r.timestamp).toLocaleString(),
+      '', 'SUMMARY', r.summary,
+      '', 'STRENGTHS',  (r.strengths||[]).map((s,i)=>(i+1)+'. '+s).join('\n'),
+      '', 'WEAKNESSES', (r.weaknesses||[]).map((s,i)=>(i+1)+'. '+s).join('\n'),
+      '', 'SUGGESTIONS',(r.suggestions||[]).map((s,i)=>(i+1)+'. '+s).join('\n'),
+      '', 'MISSING SKILLS', (r.missing_skills||[]).join(', '),
+      '', 'SCORE BREAKDOWN',
+      'Content Quality:   ' + (r.content_quality||r.score) + '%',
+      'Skills Match:      ' + (r.skills_match||r.score) + '%',
+      'Structure/Format:  ' + (r.structure_format||r.score) + '%',
+      'ATS Compatibility: ' + (r.ats_compatibility||r.score) + '%',
+    ];
+    const blob = new Blob([lines.join('\n')], { type:'text/plain' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'ResumeIQ_' + r.jobRole.replace(/\s+/g,'_') + '.txt';
+    a.click();
+    return true;
+  } catch(e) { return false; }
+}
 
-  function positionDropdown() {
-    const rect = jobRoleInput.getBoundingClientRect();
-    roleDropdown.style.top    = (rect.bottom + 6) + 'px';
-    roleDropdown.style.left   = rect.left + 'px';
-    roleDropdown.style.width  = rect.width + 'px';
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type='info', duration=4000) {
+  const icons = { error:'❌', success:'✅', info:'ℹ️', warn:'⚠️' };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.style.animation='toastOut 0.3s ease forwards'; setTimeout(()=>el.remove(),300); }, duration);
+}
+
+// ── Hamburger ─────────────────────────────────────────────────────
+const hamburger  = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open'); mobileMenu.classList.toggle('open');
+  document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+});
+function closeMobileMenu() {
+  hamburger.classList.remove('open'); mobileMenu.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Loading messages ──────────────────────────────────────────────
+const MSGS = ['Reading your resume…','Checking ATS compatibility…','Analyzing skill gaps…','Generating suggestions…'];
+let msgInterval = null, msgStep = 0;
+function startLoadingCycle() {
+  msgStep = 0; updateMsg();
+  msgInterval = setInterval(() => { msgStep=(msgStep+1)%MSGS.length; updateMsg(); }, 3500);
+}
+function updateMsg() {
+  const t = document.getElementById('loadingText');
+  t.style.opacity='0';
+  setTimeout(()=>{ t.textContent=MSGS[msgStep]; t.style.opacity='1'; },200);
+  document.querySelectorAll('.loading-dot').forEach((d,i)=>d.classList.toggle('active',i===msgStep));
+}
+function stopLoadingCycle() { clearInterval(msgInterval); msgInterval=null; }
+
+// ── Score color ───────────────────────────────────────────────────
+function scoreColor(s) { return s>=80?'#4ade80':s>=50?'#fbbf24':'#f87171'; }
+function scoreGrade(s) { return s>=90?'Excellent':s>=80?'Strong':s>=65?'Good':s>=50?'Fair':'Needs Work'; }
+
+// ── Job Role Dropdown — only on input (typing), not on focus ──────
+const JOB_ROLES = {
+  "Technology":["Software Engineer","Frontend Developer","Backend Developer","Full Stack Developer","Mobile App Developer","iOS Developer","Android Developer","DevOps Engineer","Cloud Engineer","Site Reliability Engineer","Data Engineer","Data Scientist","Machine Learning Engineer","AI Engineer","Cybersecurity Analyst","Network Engineer","Database Administrator","QA Engineer","Embedded Systems Engineer","Blockchain Developer"],
+  "Data & Analytics":["Data Analyst","Business Intelligence Analyst","Data Architect","Quantitative Analyst","Research Scientist","Statistician","Analytics Engineer","Reporting Analyst"],
+  "Design & Creative":["UI/UX Designer","Graphic Designer","Product Designer","Motion Designer","Brand Designer","Web Designer","Visual Designer","3D Artist","Illustrator","Content Creator"],
+  "Product & Management":["Product Manager","Project Manager","Scrum Master","Agile Coach","Program Manager","Technical Program Manager","Product Owner","Operations Manager"],
+  "Business & Finance":["Business Analyst","Financial Analyst","Investment Banker","Chartered Accountant","Auditor","Tax Consultant","Management Consultant","Strategy Consultant","Risk Analyst","Actuary","Credit Analyst","Compliance Officer"],
+  "Marketing & Sales":["Digital Marketing Specialist","SEO Specialist","Content Marketer","Social Media Manager","Growth Hacker","Sales Executive","Account Manager","Brand Manager","Performance Marketer","Email Marketing Specialist"],
+  "Healthcare":["Medical Doctor","Nurse","Pharmacist","Physiotherapist","Radiologist","Clinical Data Analyst","Healthcare Administrator","Biomedical Engineer"],
+  "Engineering & Manufacturing":["Mechanical Engineer","Civil Engineer","Electrical Engineer","Chemical Engineer","Aerospace Engineer","Structural Engineer","Industrial Engineer","Environmental Engineer","Production Engineer","Quality Control Engineer"],
+  "Education & Research":["Teacher","Lecturer","Research Analyst","Academic Researcher","Curriculum Developer","Instructional Designer","Education Counselor"],
+  "Legal & HR":["Lawyer","Legal Advisor","Human Resources Manager","Talent Acquisition Specialist","Recruiter","Payroll Specialist","Labor Relations Specialist"]
+};
+
+const jobRoleInput = document.getElementById('jobRole');
+const roleDropdown = document.getElementById('roleDropdown');
+const chevron      = document.getElementById('chevron');
+let dropdownOpen   = false;
+
+function buildDropdown(filter) {
+  roleDropdown.innerHTML = '';
+  let count = 0;
+  const q = filter.toLowerCase().trim();
+  for (const [cat, roles] of Object.entries(JOB_ROLES)) {
+    const matches = roles.filter(r => r.toLowerCase().includes(q));
+    if (!matches.length) continue;
+    const catEl = document.createElement('div');
+    catEl.className = 'dropdown-category'; catEl.textContent = cat;
+    roleDropdown.appendChild(catEl);
+    matches.forEach(role => {
+      const item = document.createElement('div');
+      item.className = 'dropdown-item'; item.textContent = role;
+      item.addEventListener('mousedown', e => { e.preventDefault(); jobRoleInput.value=role; closeDropdown(); });
+      roleDropdown.appendChild(item); count++;
+    });
   }
+  if (!count) roleDropdown.innerHTML = `<div class="dropdown-empty">No match — your custom role will be used ✓</div>`;
+}
 
-  function openDropdown() {
+function positionDropdown() {
+  const r = jobRoleInput.getBoundingClientRect();
+  roleDropdown.style.top = (r.bottom+6)+'px';
+  roleDropdown.style.left = r.left+'px';
+  roleDropdown.style.width = r.width+'px';
+}
+function openDropdown()  { positionDropdown(); roleDropdown.classList.add('open'); chevron.classList.add('open'); dropdownOpen=true; }
+function closeDropdown() { roleDropdown.classList.remove('open'); chevron.classList.remove('open'); dropdownOpen=false; }
+
+// Dropdown only opens when user TYPES — not on focus
+jobRoleInput.addEventListener('input', () => {
+  const q = jobRoleInput.value.trim();
+  if (q.length === 0) { closeDropdown(); return; }
+  buildDropdown(q);
+  if (!dropdownOpen) openDropdown();
+});
+jobRoleInput.addEventListener('blur', () => setTimeout(closeDropdown, 150));
+roleDropdown.addEventListener('mousedown', e => e.preventDefault());
+
+// Chevron click: toggle
+chevron.addEventListener('click', e => {
+  e.stopPropagation();
+  if (dropdownOpen) { closeDropdown(); } else {
     buildDropdown(jobRoleInput.value);
-    positionDropdown();
-    roleDropdown.classList.add('open');
-    chevron.classList.add('open');
-    dropdownOpen = true;
+    openDropdown();
+    jobRoleInput.focus();
   }
+});
+chevron.addEventListener('mouseenter', () => { if (!dropdownOpen) chevron.style.color='var(--accent)'; });
+chevron.addEventListener('mouseleave', () => { if (!dropdownOpen) chevron.style.color=''; });
 
-  function closeDropdown() {
-    roleDropdown.classList.remove('open');
-    chevron.classList.remove('open');
-    dropdownOpen = false;
+window.addEventListener('scroll', () => { if (dropdownOpen) positionDropdown(); }, true);
+window.addEventListener('resize', () => { if (dropdownOpen) positionDropdown(); });
+document.addEventListener('click', e => { if (dropdownOpen && !jobRoleInput.contains(e.target) && !roleDropdown.contains(e.target) && !chevron.contains(e.target)) closeDropdown(); });
+
+// ── File Upload ───────────────────────────────────────────────────
+const fileInput       = document.getElementById('fileInput');
+const dropZone        = document.getElementById('dropZone');
+const fileSelectedEl  = document.getElementById('fileSelected');
+const fileNameEl      = document.getElementById('fileName');
+const fileSizeEl      = document.getElementById('fileSize');
+const removeFileBtn   = document.getElementById('removeFile');
+const analyzeBtn      = document.getElementById('analyzeBtn');
+const resultsSection  = document.getElementById('resultsSection');
+const fileSizeWarning = document.getElementById('fileSizeWarning');
+let selectedFile      = null;
+let currentResult     = null;
+let analysisStart     = null;
+const MAX_SIZE        = 5 * 1024 * 1024;
+
+function formatSize(b) {
+  if (b<1024) return b+' B';
+  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(1)+' MB';
+}
+
+function setFile(file) {
+  if (!file) return;
+  if (file.size > MAX_SIZE) {
+    showToast(`File too large (${formatSize(file.size)}). Maximum is 5 MB.`, 'warn', 5000);
+    return;
   }
+  selectedFile = file;
+  fileNameEl.textContent = file.name;
+  fileSizeEl.textContent = formatSize(file.size);
+  fileSelectedEl.classList.add('active');
+  fileSizeWarning.classList.add('visible');  // show the "Max Size — 5 MB" note
+  analyzeBtn.disabled = false;
+  showToast(file.name + ' loaded and ready.', 'success', 2500);
+}
 
-  chevron.addEventListener('click', e => {
-    e.stopPropagation();
-    if (dropdownOpen) { closeDropdown(); jobRoleInput.blur(); }
-    else { jobRoleInput.focus(); openDropdown(); }
-  });
+function clearReport() {
+  currentResult = null;
+  resultsSection.classList.remove('active');
+  document.getElementById('scoreNum').textContent = '--';
+  document.getElementById('scoreGrade').textContent = '—';
+  document.getElementById('summaryCard').textContent = '';
+  ['strengthsList','weaknessesList','suggestionsList','skillsWrap'].forEach(id=>document.getElementById(id).innerHTML='');
+  ['bar1','bar2','bar3','bar4'].forEach(id=>document.getElementById(id).style.width='0');
+  ['bar1val','bar2val','bar3val','bar4val'].forEach(id=>document.getElementById(id).textContent='0%');
+}
 
-  chevron.addEventListener('mouseenter', () => { if (!dropdownOpen) chevron.style.color = 'var(--accent)'; });
-  chevron.addEventListener('mouseleave', () => { if (!dropdownOpen) chevron.style.color = ''; });
+fileInput.addEventListener('change', e => setFile(e.target.files[0]));
+removeFileBtn.addEventListener('click', () => {
+  selectedFile=null; fileInput.value='';
+  fileSelectedEl.classList.remove('active');
+  fileSizeWarning.classList.remove('visible');
+  analyzeBtn.disabled=true; clearReport();
+});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.pdf')||file.name.endsWith('.docx'))) setFile(file);
+  else showToast('Only PDF and DOCX files are supported.','error');
+});
 
-  jobRoleInput.addEventListener('focus', () => { if (!dropdownOpen) openDropdown(); });
-  jobRoleInput.addEventListener('input', () => buildDropdown(jobRoleInput.value));
-  jobRoleInput.addEventListener('blur', () => setTimeout(closeDropdown, 150));
-  roleDropdown.addEventListener('mousedown', e => e.preventDefault());
-
-  window.addEventListener('scroll', () => { if (dropdownOpen) positionDropdown(); }, true);
-  window.addEventListener('resize', () => { if (dropdownOpen) positionDropdown(); });
-  document.addEventListener('click', e => { if (dropdownOpen && !jobRoleInput.contains(e.target) && !roleDropdown.contains(e.target) && !chevron.contains(e.target)) closeDropdown(); });
-
-  const fileInput     = document.getElementById('fileInput');
-  const dropZone      = document.getElementById('dropZone');
-  const fileSelected  = document.getElementById('fileSelected');
-  const fileName      = document.getElementById('fileName');
-  const fileSize      = document.getElementById('fileSize');
-  const removeFile    = document.getElementById('removeFile');
-  const analyzeBtn    = document.getElementById('analyzeBtn');
-  const resultsSection = document.getElementById('resultsSection');
-  let selectedFile    = null;
-  let currentResult   = null;
-  let analysisStart   = null;
-
-  function formatSize(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-    return (b/1048576).toFixed(1) + ' MB';
-  }
-
-  function setFile(file) {
-    if (!file) return;
-    selectedFile = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatSize(file.size);
-    fileSelected.classList.add('active');
+// ── Analyze ───────────────────────────────────────────────────────
+analyzeBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  const jobRole = jobRoleInput.value.trim() || 'Software Developer';
+  document.getElementById('loadingOverlay').classList.add('active');
+  analyzeBtn.disabled = true;
+  startLoadingCycle();
+  analysisStart = Date.now();
+  try {
+    const formData = new FormData();
+    formData.append('resume', selectedFile);
+    formData.append('jobRole', jobRole);
+    const response = await fetch('/analyze', { method:'POST', body:formData });
+    if (!response.ok) { const err=await response.json(); throw new Error(err.error||'Server error'); }
+    const result = await response.json();
+    const elapsed = Math.round((Date.now()-analysisStart)/1000);
+    recordTiming(elapsed); incrementCount();
+    currentResult = { ...result, jobRole, fileName:selectedFile.name };
+    showResults(result);
+    showToast('Analysis complete! Scroll down to see your report.','success',4000);
+  } catch(err) {
+    showToast('Error: '+err.message+' — Make sure Flask is running: python app.py','error',7000);
+  } finally {
+    stopLoadingCycle();
+    document.getElementById('loadingOverlay').classList.remove('active');
     analyzeBtn.disabled = false;
   }
+});
 
-  function clearReport() {
-    currentResult = null;
-    resultsSection.classList.remove('active');
-    document.getElementById('scoreNum').textContent = '--';
-    document.getElementById('summaryCard').textContent = '';
-    ['strengthsList','weaknessesList','suggestionsList','skillsWrap'].forEach(id => document.getElementById(id).innerHTML = '');
-    ['bar1','bar2','bar3','bar4'].forEach(id => document.getElementById(id).style.width = '0');
-    ['bar1val','bar2val','bar3val','bar4val'].forEach(id => document.getElementById(id).textContent = '0%');
-    document.getElementById('saveStatus').classList.remove('visible');
+function showResults(result) {
+  resultsSection.classList.add('active');
+  const s=result.score||0, color=scoreColor(s), grade=scoreGrade(s);
+  document.getElementById('scoreNum').textContent   = s;
+  document.getElementById('scoreGrade').textContent = grade;
+  document.getElementById('scoreBadge').style.setProperty('--score-color', color);
+  document.getElementById('scoreNum').style.color   = color;
+  if (currentResult?.fileName) {
+    document.getElementById('resultsFileName').textContent = currentResult.fileName;
+    document.getElementById('resultsFile').style.display = 'flex';
   }
+  document.getElementById('summaryCard').textContent = result.overall_summary || '';
+  const mkItems = (arr,cls) => (arr||[]).map(t=>`<div class="result-item"><div class="result-bullet ${cls}"></div><div>${t}</div></div>`).join('');
+  document.getElementById('strengthsList').innerHTML   = mkItems(result.strengths,'bullet-green');
+  document.getElementById('weaknessesList').innerHTML  = mkItems(result.weaknesses,'bullet-red');
+  document.getElementById('suggestionsList').innerHTML = mkItems(result.suggestions,'bullet-yellow');
+  document.getElementById('skillsWrap').innerHTML      = (result.missing_skills||[]).map(s=>`<div class="skill-tag">${s}</div>`).join('');
+  setTimeout(() => {
+    setBar('bar1','bar1val', result.content_quality   || result.score);
+    setBar('bar2','bar2val', result.skills_match      || Math.max(0,result.score-10));
+    setBar('bar3','bar3val', result.structure_format  || Math.min(100,result.score+5));
+    setBar('bar4','bar4val', result.ats_compatibility || Math.max(0,result.score-15));
+  }, 300);
+  resultsSection.scrollIntoView({ behavior:'smooth', block:'start' });
+}
 
-  fileInput.addEventListener('change', e => setFile(e.target.files[0]));
-  removeFile.addEventListener('click', () => { selectedFile = null; fileInput.value = ''; fileSelected.classList.remove('active'); analyzeBtn.disabled = true; clearReport(); });
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault(); dropZone.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file && (file.name.endsWith('.pdf') || file.name.endsWith('.docx'))) setFile(file);
-    else alert('Please upload a PDF or DOCX file.');
-  });
+function setBar(barId,valId,pct) {
+  pct=Math.min(100,Math.max(0,pct));
+  document.getElementById(barId).style.width = pct+'%';
+  document.getElementById(valId).textContent = pct+'%';
+}
 
-  analyzeBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
-    const jobRole = jobRoleInput.value.trim() || 'Software Developer';
-    document.getElementById('loadingOverlay').classList.add('active');
-    analyzeBtn.disabled = true;
-    analysisStart = Date.now();
-    try {
-      const resumeText = await readFileText(selectedFile);
-      const result = await analyzeWithClaude(resumeText, jobRole);
-      const elapsed = Math.round((Date.now() - analysisStart) / 1000);
-      recordTiming(elapsed);
-      incrementCount();
-      currentResult = { ...result, jobRole };
-      showResults(result);
-    } catch (err) {
-      alert('Error analyzing resume: ' + err.message);
-    } finally {
-      document.getElementById('loadingOverlay').classList.remove('active');
-      analyzeBtn.disabled = false;
-    }
-  });
+function analyzeAgain() {
+  clearReport();
+  window.scrollTo({ top:document.querySelector('.upload-section').offsetTop-100, behavior:'smooth' });
+}
 
-  async function readFileText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (file.name.endsWith('.pdf')) resolve('[PDF Content: ' + file.name + ' — ' + formatSize(file.size) + '. In production, use pdfplumber to extract text server-side.]');
-        else { try { resolve(e.target.result || '[DOCX content extracted]'); } catch { resolve('[DOCX Content from: ' + file.name + ']'); } }
-      };
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
-  }
+function saveAndViewReport() {
+  if (!currentResult) return;
+  const reports = JSON.parse(localStorage.getItem('resumeiq_reports')||'[]');
+  const id = 'r_'+Date.now();
+  reports.push({ id, timestamp:Date.now(), jobRole:currentResult.jobRole, fileName:currentResult.fileName||'', score:currentResult.score, summary:currentResult.overall_summary, strengths:currentResult.strengths, weaknesses:currentResult.weaknesses, suggestions:currentResult.suggestions, missing_skills:currentResult.missing_skills, content_quality:currentResult.content_quality, skills_match:currentResult.skills_match, structure_format:currentResult.structure_format, ats_compatibility:currentResult.ats_compatibility });
+  localStorage.setItem('resumeiq_reports', JSON.stringify(reports));
+  showToast('Report saved! Redirecting…','success',2000);
+  setTimeout(() => window.location.href='report.html?id='+id, 800);
+}
 
-  async function analyzeWithClaude(resumeText, jobRole) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-        messages: [{ role: 'user', content: `You are an expert resume reviewer. Analyze the following resume for the role of "${jobRole}".
-Return ONLY a valid JSON object with NO markdown, NO backticks, and NO extra text:
-{"score":<0-100>,"overall_summary":"<2-3 sentences>","strengths":["s1","s2","s3"],"weaknesses":["w1","w2","w3"],"suggestions":["s1","s2","s3"],"missing_skills":["k1","k2","k3","k4","k5"],"content_quality":<0-100>,"skills_match":<0-100>,"structure_format":<0-100>,"ats_compatibility":<0-100>}
-Resume:\n${resumeText.substring(0,3000)}` }]
-      })
-    });
-    if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message || 'API error'); }
-    const data = await response.json();
-    let raw = data.content.map(i => i.text || '').join('').trim().replace(/```json|```/g,'').trim();
-    return JSON.parse(raw);
-  }
-
-  function showResults(result) {
-    resultsSection.classList.add('active');
-    document.getElementById('scoreNum').textContent = result.score || 0;
-    document.getElementById('summaryCard').textContent = result.overall_summary || '';
-    const mkItems = (arr, cls) => (arr||[]).map(t => `<div class="result-item"><div class="result-bullet ${cls}"></div><div>${t}</div></div>`).join('');
-    document.getElementById('strengthsList').innerHTML  = mkItems(result.strengths,  'bullet-green');
-    document.getElementById('weaknessesList').innerHTML = mkItems(result.weaknesses, 'bullet-red');
-    document.getElementById('suggestionsList').innerHTML= mkItems(result.suggestions,'bullet-yellow');
-    document.getElementById('skillsWrap').innerHTML = (result.missing_skills||[]).map(s=>`<div class="skill-tag">${s}</div>`).join('');
-    setTimeout(() => {
-      setBar('bar1','bar1val', result.content_quality  || result.score);
-      setBar('bar2','bar2val', result.skills_match     || Math.max(0, result.score-10));
-      setBar('bar3','bar3val', result.structure_format || Math.min(100, result.score+5));
-      setBar('bar4','bar4val', result.ats_compatibility|| Math.max(0, result.score-15));
-    }, 200);
-    resultsSection.scrollIntoView({ behavior:'smooth', block:'start' });
-  }
-
-  function setBar(barId, valId, pct) {
-    pct = Math.min(100, Math.max(0, pct));
-    document.getElementById(barId).style.width = pct + '%';
-    document.getElementById(valId).textContent = pct + '%';
-  }
-
-  function saveAndViewReport() {
-    if (!currentResult) return;
-
-    const reports = JSON.parse(localStorage.getItem('resumeiq_reports') || '[]');
-
-    // Use the filename as a stable key — 1 report per resume file
-    const fileKey = selectedFile ? selectedFile.name : 'unknown';
-    const existingIndex = reports.findIndex(r => r.fileKey === fileKey);
-
-    // Reuse the same id if already exists (so the URL stays stable), else create new
-    const id = existingIndex >= 0 ? reports[existingIndex].id : 'r_' + fileKey.replace(/[^a-z0-9]/gi, '_');
-
-    const report = {
-      id,
-      fileKey,
-      timestamp: Date.now(),
-      jobRole: currentResult.jobRole,
-      score: currentResult.score,
-      summary: currentResult.overall_summary,
-      strengths: currentResult.strengths,
-      weaknesses: currentResult.weaknesses,
-      suggestions: currentResult.suggestions,
-      missing_skills: currentResult.missing_skills,
-      content_quality: currentResult.content_quality,
-      skills_match: currentResult.skills_match,
-      structure_format: currentResult.structure_format,
-      ats_compatibility: currentResult.ats_compatibility
-    };
-
-    // Overwrite existing entry or add new one — never duplicates
-    if (existingIndex >= 0) {
-      reports[existingIndex] = report;
-    } else {
-      reports.push(report);
-    }
-
-    localStorage.setItem('resumeiq_reports', JSON.stringify(reports));
-    document.getElementById('saveStatus').classList.add('visible');
-    setTimeout(() => window.location.href = 'report.html?id=' + id, 600);
-  }
-
-  function incrementCount() {
-    const current = parseInt(localStorage.getItem('resumeiq_count') || '10000');
-    localStorage.setItem('resumeiq_count', current + 1);
-  }
-
-  function recordTiming(seconds) {
-    const times = JSON.parse(localStorage.getItem('resumeiq_times') || '[]');
-    times.push(seconds);
-    if (times.length > 50) times.shift(); // keep last 50
-    localStorage.setItem('resumeiq_times', JSON.stringify(times));
-  }
+function incrementCount() { const c=parseInt(localStorage.getItem('resumeiq_count')||'0'); localStorage.setItem('resumeiq_count',c+1); }
+function recordTiming(s) { const t=JSON.parse(localStorage.getItem('resumeiq_times')||'[]'); t.push(s); if(t.length>50)t.shift(); localStorage.setItem('resumeiq_times',JSON.stringify(t)); }
 </script>
 </body>
 </html>
