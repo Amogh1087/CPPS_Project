@@ -2,3 +2,7 @@ pdfplumber==0.10.3
 python-docx==1.1.0
 spacy==3.7.2
 sentence-transformers==2.2.2
+libraries used in llm integration:
+google-generativeai==0.4.1
+python-docx==1.1.0
+python-dotenv==1.0.1
