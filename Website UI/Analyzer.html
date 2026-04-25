@@ -24,6 +24,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);ove
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
 body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(137,194,224,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(137,194,224,.035) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
 
+/* ── ANIMATION 1: Score counter — JS-driven, no CSS needed here ── */
+
+/* ── ANIMATION 2: Score ring fill ── */
+.sc-ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0}
+.sc-badge{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;border:none;box-shadow:none;background:none;width:88px;height:88px}
+.sc-ring-svg{position:absolute;inset:0;width:88px;height:88px;transform:rotate(-90deg);pointer-events:none}
+.sc-ring-track{fill:none;stroke:var(--border);stroke-width:3.5}
+.sc-ring-fill{fill:none;stroke:var(--sc,var(--accent));stroke-width:3.5;stroke-linecap:round;stroke-dasharray:251;stroke-dashoffset:251;transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1),stroke .5s}
+/* Inner circle bg so text sits on a coloured disc */
+.sc-badge-bg{fill:color-mix(in srgb,var(--sc,var(--accent)) 9%,transparent)}
+
+/* ── ANIMATION 3: Staggered card reveal ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.rc{opacity:0}
+.rc.revealed{animation:cardIn .55s cubic-bezier(.22,1,.36,1) forwards}
+.rc.revealed:nth-child(1){animation-delay:.0s}
+.rc.revealed:nth-child(2){animation-delay:.12s}
+.rc.revealed:nth-child(3){animation-delay:.24s}
+
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;gap:14px;padding:16px 48px;background:rgba(7,16,30,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .25s}
 body.light nav{background:rgba(240,245,250,.95)}
@@ -179,9 +198,12 @@ body.light nav{background:rgba(240,245,250,.95)}
 .rg input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.93rem;outline:none;transition:border-color .2s,box-shadow .2s}
 .rg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(137,194,224,.1)}
 .rg input::placeholder{color:var(--muted)}
-.an-btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--accent),#b8d8ec);color:var(--bg);border:none;padding:13px 28px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.93rem;cursor:pointer;transition:transform .2s,box-shadow .2s;white-space:nowrap}
+.an-btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--accent),#b8d8ec);color:var(--bg);border:none;padding:13px 28px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.93rem;cursor:pointer;transition:transform .2s,box-shadow .2s;white-space:nowrap;position:relative;overflow:hidden}
 .an-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(137,194,224,.33)}
 .an-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+/* ── Animate 5: Ripple ── */
+.btn-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.32);transform:scale(0);animation:rippleOut .6s linear forwards;pointer-events:none}
+@keyframes rippleOut{to{transform:scale(4.5);opacity:0}}
 
 /* LOADING */
 .lov{display:none;position:absolute;inset:0;background:rgba(7,16,30,.94);backdrop-filter:blur(6px);border-radius:20px;align-items:center;justify-content:center;flex-direction:column;gap:18px;z-index:10}
@@ -201,10 +223,9 @@ body.light nav{background:rgba(240,245,250,.95)}
 .sec-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);font-weight:600;margin-bottom:7px}
 .res-title{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-.03em}
 .res-file{font-size:.8rem;color:var(--muted);margin-top:5px;display:none;align-items:center;gap:5px}
-.sc-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;width:88px;height:88px;border-radius:50%;border:3px solid var(--sc,var(--accent));box-shadow:0 0 28px color-mix(in srgb,var(--sc,var(--accent)) 28%,transparent);background:color-mix(in srgb,var(--sc,var(--accent)) 7%,transparent);flex-shrink:0;transition:all .6s}
-.sc-n{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:var(--sc,var(--accent));line-height:1;transition:color .6s}
+.sc-n{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;color:var(--sc,var(--accent));line-height:1;transition:color .5s}
 .sc-l{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-.sc-g{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--sc,var(--accent));margin-top:3px}
+.sc-g{font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--sc,var(--accent));margin-top:3px;transition:color .5s}
 .sum-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:22px;font-size:.93rem;color:var(--muted);line-height:1.7;font-weight:300;font-style:italic}
 .rg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px}
 .rc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;transition:border-color .2s}
@@ -236,8 +257,15 @@ body.light nav{background:rgba(240,245,250,.95)}
 .sk-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:22px}
 .sk-tl{font-family:'Syne',sans-serif;font-size:.83rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px}
 .sk-wrap{display:flex;flex-wrap:wrap;gap:9px}
-.sk-tag{background:rgba(137,194,224,.07);border:1px solid rgba(137,194,224,.2);color:var(--accent3);padding:6px 15px;border-radius:6px;font-size:.8rem;font-weight:500;transition:all .2s}
+/* ── Animation 4: Skill tag pop-in ── */
+@keyframes popIn{
+  0%  {opacity:0;transform:scale(.5)}
+  65% {transform:scale(1.14)}
+  100%{opacity:1;transform:scale(1)}
+}
+.sk-tag{background:rgba(137,194,224,.07);border:1px solid rgba(137,194,224,.2);color:var(--accent3);padding:6px 15px;border-radius:6px;font-size:.8rem;font-weight:500;transition:background .2s,border-color .2s;opacity:0;transform:scale(.5)}
 .sk-tag:hover{background:rgba(137,194,224,.13);border-color:rgba(137,194,224,.38)}
+.sk-tag.pop{animation:popIn .42s cubic-bezier(.34,1.56,.64,1) forwards}
 
 /* BARS */
 .bars-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:22px}
@@ -435,10 +463,16 @@ footer{position:relative;z-index:1;padding:44px 60px;border-top:1px solid var(--
       <div class="res-title">Your Resume Report</div>
       <div class="res-file" id="resFile">📄 <span id="resFileName"></span></div>
     </div>
-    <div class="sc-badge" id="scBadge">
-      <div class="sc-n" id="scN">--</div>
-      <div class="sc-l">/ 100</div>
-      <div class="sc-g" id="scG">—</div>
+    <div class="sc-ring-wrap" id="scBadgeWrap">
+      <svg class="sc-ring-svg" viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg">
+        <circle class="sc-ring-track" cx="44" cy="44" r="40"/>
+        <circle class="sc-ring-fill" id="scRingFill" cx="44" cy="44" r="40"/>
+      </svg>
+      <div class="sc-badge" id="scBadge">
+        <div class="sc-n" id="scN" style="font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;line-height:1">--</div>
+        <div class="sc-l" style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">/ 100</div>
+        <div class="sc-g" id="scG" style="font-size:.68rem;font-weight:700;text-transform:uppercase;margin-top:3px">—</div>
+      </div>
     </div>
   </div>
 
@@ -596,14 +630,47 @@ function cpSug(text,btn){
   navigator.clipboard.writeText(text).then(function(){btn.classList.add('ok');btn.textContent='✓';setTimeout(function(){btn.classList.remove('ok');btn.textContent='⧉';},1800);}).catch(function(){toast('Copy failed.','tw');});
 }
 
-// ── Keyword highlighter ───────────────────────────────────────────
-function renderKW(result){
+// ── Navbar scroll shrink ──────────────────────────────────────────
+window.addEventListener('scroll',function(){
+  document.querySelector('nav').classList.toggle('scrolled',window.scrollY>40);
+},{passive:true});
+
+// ── Checklist ripple ──────────────────────────────────────────────
+document.addEventListener('change',function(e){
+  if(!e.target.matches('.cl-item input[type=checkbox]'))return;
+  var item=e.target.closest('.cl-item');if(!item)return;
+  var r=document.createElement('span');r.className='cl-ripple';
+  var rect=item.getBoundingClientRect();
+  r.style.left=(e.clientX-rect.left-10)+'px';r.style.top=(e.clientY-rect.top-10)+'px';
+  item.appendChild(r);setTimeout(function(){r.remove();},500);
+});
+
+// ── Animation 5: Analyze button ripple ───────────────────────────
+document.getElementById('anBtn').addEventListener('click',function(e){
+  var btn=this;
+  var rect=btn.getBoundingClientRect();
+  var size=Math.max(rect.width,rect.height);
+  var x=e.clientX-rect.left-size/2;
+  var y=e.clientY-rect.top-size/2;
+  var rip=document.createElement('span');
+  rip.className='btn-ripple';
+  rip.style.cssText='width:'+size+'px;height:'+size+'px;left:'+x+'px;top:'+y+'px';
+  btn.appendChild(rip);
+  setTimeout(function(){rip.remove();},650);
+},true); // capture=true so it fires even when btn goes disabled
+
+// ── Keyword highlighter (with stagger) ───────────────────────────
+function renderKW(result,animate){
   var missing=result.missing_skills||[];
   if(!missing.length){document.getElementById('kwCard').style.display='none';return;}
   var summaryLower=((result.overall_summary||'')+(result.strengths||[]).join(' ')).toLowerCase();
   var kws=missing.map(function(s){return {label:s,found:summaryLower.indexOf(s.toLowerCase())!==-1};});
   document.getElementById('kwCard').style.display='';
   document.getElementById('kwWrap').innerHTML=kws.map(function(k){return '<span class="'+(k.found?'kw-m':'kw-x')+'">'+k.label+'</span>';}).join('');
+  document.querySelectorAll('.kw-m,.kw-x').forEach(function(el,i){
+    if(animate)setTimeout(function(){el.classList.add('in');},i*55+100);
+    else el.classList.add('in');
+  });
 }
 
 // ── File upload ───────────────────────────────────────────────────
@@ -626,6 +693,13 @@ function setFile(f){
 function clearResults(){
   curResult=null;resSec.classList.remove('on');
   document.getElementById('scN').textContent='--';document.getElementById('scG').textContent='—';
+  document.getElementById('scN').style.color='';
+  document.getElementById('scBadge').style.transform='';
+  document.getElementById('scBadge').style.transition='';
+  var ring=document.getElementById('scRingFill');
+  ring.style.strokeDashoffset=ring.style.strokeDasharray=String(2*Math.PI*40);
+  ring.style.stroke='';
+  document.querySelectorAll('.rg3 .rc').forEach(function(el){el.classList.remove('revealed');});
   document.getElementById('sumCard').textContent='';
   ['strList','wkList','sugList','skWrap','kwWrap'].forEach(function(id){document.getElementById(id).innerHTML='';});
   document.getElementById('kwCard').style.display='none';
@@ -675,10 +749,28 @@ anBtn.addEventListener('click',async function(){
 function showResults(result){
   resSec.classList.add('on');
   var s=result.score||0,col=scCol(s),grade=scGrade(s);
-  document.getElementById('scN').textContent=s;
+
+  // ── Score counter animation ──
   document.getElementById('scG').textContent=grade;
   document.getElementById('scBadge').style.setProperty('--sc',col);
   document.getElementById('scN').style.color=col;
+  animateCounter('scN',0,s,1200);
+
+  // ── Score ring fill ──
+  var ring=document.getElementById('scRingFill');
+  ring.style.stroke=col;
+  var circ=2*Math.PI*40; // 251.3
+  ring.style.strokeDasharray=circ;
+  ring.style.strokeDashoffset=circ;
+  setTimeout(function(){ring.style.strokeDashoffset=circ*(1-s/100);},120);
+
+  // ── Score badge pulse on finish ──
+  setTimeout(function(){
+    var badge=document.getElementById('scBadge');
+    badge.style.transform='scale(1.12)';
+    setTimeout(function(){badge.style.transform='scale(1)';badge.style.transition='transform .3s cubic-bezier(.34,1.56,.64,1)';},1300);
+  },1200);
+
   if(curResult&&curResult.fileName){document.getElementById('resFileName').textContent=curResult.fileName;document.getElementById('resFile').style.display='flex';}
   document.getElementById('sumCard').textContent=result.overall_summary||'';
 
@@ -688,17 +780,55 @@ function showResults(result){
   document.getElementById('strList').innerHTML=mkItems(result.strengths,'rg-b');
   document.getElementById('wkList').innerHTML=mkItems(result.weaknesses,'rr-b');
   document.getElementById('sugList').innerHTML=mkSugs(result.suggestions);
-  document.getElementById('skWrap').innerHTML=(result.missing_skills||[]).map(function(s){return '<div class="sk-tag">'+s+'</div>';}).join('');
-  renderKW(result);
+
+  // ── Animation 3: staggered card reveal ──
+  document.querySelectorAll('.rg3 .rc').forEach(function(el){
+    el.classList.remove('revealed');
+    void el.offsetWidth; // force reflow so re-adding restarts animation
+    el.classList.add('revealed');
+  });
+
+  // ── Skill tags pop-in with stagger ──
+  var skills=result.missing_skills||[];
+  document.getElementById('skWrap').innerHTML=skills.map(function(s){return '<div class="sk-tag">'+s+'</div>';}).join('');
+  document.querySelectorAll('.sk-tag').forEach(function(el,i){
+    setTimeout(function(){el.classList.add('pop');},i*60+200);
+  });
+
+  // ── Keyword badges bounce-in with stagger ──
+  renderKW(result,true);
+
+  // ── Staggered bar fills ──
   setTimeout(function(){
-    setBar('b1','bv1',result.content_quality||result.score);
-    setBar('b2','bv2',result.skills_match||Math.max(0,result.score-10));
-    setBar('b3','bv3',result.structure_format||Math.min(100,result.score+5));
-    setBar('b4','bv4',result.ats_compatibility||Math.max(0,result.score-15));
+    setBar('b1','bv1',result.content_quality||result.score,0);
+    setBar('b2','bv2',result.skills_match||Math.max(0,result.score-10),120);
+    setBar('b3','bv3',result.structure_format||Math.min(100,result.score+5),240);
+    setBar('b4','bv4',result.ats_compatibility||Math.max(0,result.score-15),360);
   },300);
   resSec.scrollIntoView({behavior:'smooth',block:'start'});
 }
-function setBar(id,vid,pct){pct=Math.min(100,Math.max(0,pct));document.getElementById(id).style.width=pct+'%';document.getElementById(vid).textContent=pct+'%';}
+
+function animateCounter(elId,from,to,dur){
+  var el=document.getElementById(elId);
+  var start=null;
+  function step(ts){
+    if(!start)start=ts;
+    var pct=Math.min((ts-start)/dur,1);
+    var ease=1-Math.pow(1-pct,3); // ease-out cubic
+    el.textContent=Math.round(from+(to-from)*ease);
+    if(pct<1)requestAnimationFrame(step);
+    else el.textContent=to;
+  }
+  requestAnimationFrame(step);
+}
+
+function setBar(id,vid,pct,delay){
+  pct=Math.min(100,Math.max(0,pct));
+  setTimeout(function(){
+    document.getElementById(id).style.width=pct+'%';
+    document.getElementById(vid).textContent=pct+'%';
+  },delay||0);
+}
 function analyzeAgain(){clearResults();window.scrollTo({top:document.querySelector('.up-sec').offsetTop-100,behavior:'smooth'});}
 
 // ── Cover Letter ──────────────────────────────────────────────────
