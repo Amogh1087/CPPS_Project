@@ -134,6 +134,25 @@ body.light nav{background:rgba(240,245,250,.95)}
 .stat-l{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 
+/* ── ANIMATIONS ── */
+/* Page fade-in */
+@keyframes pageFadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+body{animation:pageFadeIn .4s ease both}
+/* Navbar scroll */
+nav{transition:padding .3s ease,background .25s,box-shadow .3s}
+nav.scrolled{padding-top:10px;padding-bottom:10px;box-shadow:0 4px 24px rgba(0,0,0,.28)}
+/* Hero gradient shift */
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero h1 .gr{background-size:200% 200%;animation:gradShift 5s ease infinite}
+/* Hover shimmer on step/feature cards */
+@keyframes shimmer{0%{left:-100%}100%{left:200%}}
+.step,.feat{overflow:hidden}
+.step::after,.feat::after{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(137,194,224,.07),transparent);pointer-events:none}
+.step:hover::after,.feat:hover::after{animation:shimmer .65s ease}
+/* Report card lift */
+.rep-card{transition:all .3s cubic-bezier(.34,1.2,.64,1)}
+.rep-card:hover{transform:translateY(-5px) scale(1.01)}
+
 /* ── SHARED ── */
 .sec-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);font-weight:600;margin-bottom:14px}
 .sec-title{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:14px}
@@ -273,6 +292,7 @@ footer{position:relative;z-index:1;padding:44px 60px;border-top:1px solid var(--
 </div>
 
 <section class="hero">
+  <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55"></canvas>
   <div class="hg hg1"></div><div class="hg hg2"></div><div class="hg hg3"></div>
   <h1>Your Resume,<span class="gr">Analyzed by AI</span></h1>
   <p>Upload your resume and get an instant, detailed breakdown — score, strengths, gaps, and actionable suggestions to land your next role.</p>
@@ -468,6 +488,88 @@ function renderReports(){
   }).join('')+'</div>';
 }
 renderStats(); renderReports();
+
+// ── Animation 6: Hero floating particles ──────────────────────────
+(function(){
+  var canvas=document.getElementById('particleCanvas');
+  var ctx=canvas.getContext('2d');
+  var pts=[];
+  var COUNT=55;
+
+  function resize(){
+    var hero=canvas.parentElement;
+    canvas.width=hero.offsetWidth;
+    canvas.height=hero.offsetHeight;
+  }
+
+  function rand(min,max){return min+Math.random()*(max-min);}
+
+  function mkParticle(){
+    return {
+      x:rand(0,canvas.width),
+      y:rand(0,canvas.height),
+      r:rand(1,2.8),
+      vx:rand(-.18,.18),
+      vy:rand(-.22,-.06),  // drift slowly upward
+      alpha:rand(.15,.55),
+      pulse:rand(0,Math.PI*2), // phase offset for twinkle
+      pulseSpeed:rand(.004,.012)
+    };
+  }
+
+  function init(){
+    resize();
+    pts=[];
+    for(var i=0;i<COUNT;i++) pts.push(mkParticle());
+  }
+
+  // Detect accent colour from CSS variable
+  function accentRGB(){
+    var light=document.body.classList.contains('light');
+    return light?'26,111,160':'137,194,224';
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var rgb=accentRGB();
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i];
+      // twinkle: pulse alpha gently
+      p.pulse+=p.pulseSpeed;
+      var a=p.alpha*(0.65+0.35*Math.sin(p.pulse));
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba('+rgb+','+a+')';
+      ctx.fill();
+
+      p.x+=p.vx;
+      p.y+=p.vy;
+
+      // wrap edges
+      if(p.y<-5)    p.y=canvas.height+5;
+      if(p.x<-5)    p.x=canvas.width+5;
+      if(p.x>canvas.width+5)  p.x=-5;
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize',function(){
+    resize();
+    // reposition any out-of-bounds particles after resize
+    pts.forEach(function(p){
+      if(p.x>canvas.width)  p.x=rand(0,canvas.width);
+      if(p.y>canvas.height) p.y=rand(0,canvas.height);
+    });
+  });
+
+  init();
+  draw();
+})();
+
+// ── Navbar scroll shrink ──────────────────────────────────────────
+window.addEventListener('scroll',function(){
+  document.querySelector('nav').classList.toggle('scrolled',window.scrollY>40);
+},{passive:true});
 </script>
 </body>
 </html>
