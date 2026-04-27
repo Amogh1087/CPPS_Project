@@ -534,6 +534,25 @@ function selectReport(id){
     +'</div>';
 
   document.getElementById('detPane').scrollTo({top:0,behavior:'smooth'});
+
+  // ── Animation 10: Tilt the three detail cards ──
+  setTimeout(function(){
+    document.querySelectorAll('#detContent .dc').forEach(function(card){
+      card.style.willChange = 'transform';
+      card.addEventListener('mousemove', function(e){
+        var r  = card.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width  / 2)) / (r.width  / 2);
+        var dy = (e.clientY - (r.top  + r.height / 2)) / (r.height / 2);
+        card.style.transition = 'transform .08s ease,border-color .25s';
+        card.style.transform  =
+          'perspective(600px) rotateX('+(-dy*8)+'deg) rotateY('+(dx*8)+'deg) translateY(-4px) scale(1.015)';
+      });
+      card.addEventListener('mouseleave', function(){
+        card.style.transition = 'transform .4s cubic-bezier(.22,1,.36,1),border-color .25s';
+        card.style.transform  = 'perspective(600px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
+      });
+    });
+  }, 50); // small delay to ensure DOM is painted
 }
 
 // ── Copy suggestion ───────────────────────────────────────────────
