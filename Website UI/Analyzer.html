@@ -43,6 +43,15 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 .rc.revealed:nth-child(2){animation-delay:.12s}
 .rc.revealed:nth-child(3){animation-delay:.24s}
 
+/* ── ANIMATION 9: Score badge pulse ── */
+@keyframes badgePulse{
+  0%  {transform:scale(1)}
+  45% {transform:scale(1.15)}
+  70% {transform:scale(.96)}
+  100%{transform:scale(1)}
+}
+.sc-ring-wrap.pulse{animation:badgePulse .55s cubic-bezier(.34,1.56,.64,1) forwards}
+
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;gap:14px;padding:16px 48px;background:rgba(7,16,30,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .25s}
 body.light nav{background:rgba(240,245,250,.95)}
@@ -277,6 +286,33 @@ body.light nav{background:rgba(240,245,250,.95)}
 
 /* COVER LETTER */
 .cv-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:22px}
+
+/* ── Animation 7: Skeleton loader ── */
+@keyframes skShimmer{
+  0%  {background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+.sk-pulse{
+  background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+  background-size:200% 100%;
+  animation:skShimmer 1.6s ease infinite;
+  border-radius:8px;
+}
+/* Skeleton screen wrapper — sits in the results section slot */
+.skel-sec{display:none;position:relative;z-index:1;padding:0 60px 40px;max-width:980px;margin:0 auto}
+.skel-sec.on{display:block}
+.sk-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.sk-title-block{display:flex;flex-direction:column;gap:10px;flex:1}
+.sk-line{height:11px;border-radius:5px}
+.sk-circle{width:88px;height:88px;border-radius:50%;flex-shrink:0}
+.sk-summary{height:74px;border-radius:12px;margin-bottom:22px}
+.sk-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px}
+.sk-card-ph{height:172px;border-radius:12px}
+.sk-bar-blk{border-radius:12px;padding:22px;background:var(--surface);border:1px solid var(--border);margin-bottom:22px}
+.sk-bar-row{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.sk-bar-lbl{height:9px;width:130px;border-radius:5px}
+.sk-bar-track{height:5px;border-radius:3px}
+@media(max-width:768px){.sk-grid3,.skel-sec{padding-left:22px;padding-right:22px}.sk-grid3{grid-template-columns:1fr}}
 .cv-hd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
 .cv-tl{font-family:'Syne',sans-serif;font-size:.83rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .cv-btns{display:flex;gap:7px}
@@ -456,6 +492,30 @@ footer{position:relative;z-index:1;padding:44px 60px;border-top:1px solid var(--
 </section>
 
 <!-- RESULTS -->
+<!-- ── Animation 7: Skeleton placeholder (shown while analyzing) ── -->
+<div class="skel-sec" id="skelSec">
+  <div class="sk-hdr">
+    <div class="sk-title-block">
+      <div class="sk-line sk-pulse" style="width:110px;opacity:.55"></div>
+      <div class="sk-line sk-pulse" style="width:210px;height:18px"></div>
+      <div class="sk-line sk-pulse" style="width:150px;opacity:.5"></div>
+    </div>
+    <div class="sk-circle sk-pulse"></div>
+  </div>
+  <div class="sk-summary sk-pulse"></div>
+  <div class="sk-grid3">
+    <div class="sk-card-ph sk-pulse"></div>
+    <div class="sk-card-ph sk-pulse" style="animation-delay:.18s"></div>
+    <div class="sk-card-ph sk-pulse" style="animation-delay:.36s"></div>
+  </div>
+  <div class="sk-bar-blk">
+    <div class="sk-bar-row"><div class="sk-bar-lbl sk-pulse"></div><div class="sk-bar-track sk-pulse"></div></div>
+    <div class="sk-bar-row"><div class="sk-bar-lbl sk-pulse" style="animation-delay:.1s;width:105px"></div><div class="sk-bar-track sk-pulse" style="animation-delay:.1s"></div></div>
+    <div class="sk-bar-row"><div class="sk-bar-lbl sk-pulse" style="animation-delay:.2s;width:148px"></div><div class="sk-bar-track sk-pulse" style="animation-delay:.2s"></div></div>
+    <div class="sk-bar-row"><div class="sk-bar-lbl sk-pulse" style="animation-delay:.3s;width:122px"></div><div class="sk-bar-track sk-pulse" style="animation-delay:.3s"></div></div>
+  </div>
+</div>
+
 <div class="res-sec" id="resSec">
   <div class="res-hdr">
     <div>
@@ -692,10 +752,10 @@ function setFile(f){
 }
 function clearResults(){
   curResult=null;resSec.classList.remove('on');
+  document.getElementById('skelSec').classList.remove('on');
   document.getElementById('scN').textContent='--';document.getElementById('scG').textContent='—';
   document.getElementById('scN').style.color='';
-  document.getElementById('scBadge').style.transform='';
-  document.getElementById('scBadge').style.transition='';
+  document.getElementById('scBadgeWrap').classList.remove('pulse');
   var ring=document.getElementById('scRingFill');
   ring.style.strokeDashoffset=ring.style.strokeDasharray=String(2*Math.PI*40);
   ring.style.stroke='';
@@ -729,6 +789,11 @@ anBtn.addEventListener('click',async function(){
   var jobRole=document.getElementById('jobRole').value.trim()||'Software Developer';
   document.getElementById('lov').classList.add('on');
   anBtn.disabled=true;startLoad();aStart=Date.now();
+  // ── Animation 7: show skeleton immediately ──
+  document.getElementById('skelSec').classList.add('on');
+  document.getElementById('resSec').classList.remove('on');
+  // scroll down so skeleton is visible
+  document.getElementById('skelSec').scrollIntoView({behavior:'smooth',block:'start'});
   try{
     var fd=new FormData();fd.append('resume',selFile);fd.append('jobRole',jobRole);
     var res=await fetch('/analyze',{method:'POST',body:fd});
@@ -737,9 +802,12 @@ anBtn.addEventListener('click',async function(){
     var elapsed=Math.round((Date.now()-aStart)/1000);
     recTime(elapsed);incCount();
     curResult=Object.assign({},result,{jobRole:jobRole,fileName:selFile.name});
+    // ── Animation 7: hide skeleton, reveal real results ──
+    document.getElementById('skelSec').classList.remove('on');
     showResults(result);
     toast('Analysis complete! Scroll down to view your report.','ts',4000);
   }catch(e){
+    document.getElementById('skelSec').classList.remove('on');
     toast('Error: '+e.message+' — Make sure Flask is running: python app.py','te',7000);
   }finally{
     stopLoad();document.getElementById('lov').classList.remove('on');anBtn.disabled=false;
@@ -764,12 +832,14 @@ function showResults(result){
   ring.style.strokeDashoffset=circ;
   setTimeout(function(){ring.style.strokeDashoffset=circ*(1-s/100);},120);
 
-  // ── Score badge pulse on finish ──
+  // ── Animation 9: Score badge pulse on ring completion ──
   setTimeout(function(){
-    var badge=document.getElementById('scBadge');
-    badge.style.transform='scale(1.12)';
-    setTimeout(function(){badge.style.transform='scale(1)';badge.style.transition='transform .3s cubic-bezier(.34,1.56,.64,1)';},1300);
-  },1200);
+    var wrap=document.getElementById('scBadgeWrap');
+    wrap.classList.remove('pulse');
+    void wrap.offsetWidth; // reflow to restart if re-analyzed
+    wrap.classList.add('pulse');
+    setTimeout(function(){wrap.classList.remove('pulse');},600);
+  },1350);
 
   if(curResult&&curResult.fileName){document.getElementById('resFileName').textContent=curResult.fileName;document.getElementById('resFile').style.display='flex';}
   document.getElementById('sumCard').textContent=result.overall_summary||'';
