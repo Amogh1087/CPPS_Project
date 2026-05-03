@@ -155,9 +155,37 @@ body.light nav{background:rgba(240,245,250,.95)}
 
 /* UPLOAD */
 .up-sec{position:relative;z-index:1;padding:0 60px 40px;max-width:980px;margin:0 auto}
-.up-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px;position:relative;transition:border-color .3s;animation:fUp .7s ease .15s both}
+.up-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px;position:relative;transition:border-color .3s;animation:fUp .7s ease .15s both;overflow:hidden}
 .up-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(137,194,224,.04),transparent 60%);pointer-events:none;border-radius:20px;z-index:0}
 .up-card:hover{border-color:rgba(137,194,224,.3)}
+
+/* Slim animated progress bar along the top edge */
+.up-card::after{
+  content:'';position:absolute;top:0;left:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),#b8d8ec,var(--accent));
+  background-size:200% 100%;
+  border-radius:20px 20px 0 0;
+  width:0;opacity:0;z-index:5;
+}
+.up-card.analyzing::after{
+  opacity:1;width:82%;
+  animation:progressShimmer 1.6s linear infinite;
+  transition:width 20s cubic-bezier(.05,0,.15,1),opacity .2s;
+}
+.up-card.done::after{
+  opacity:1;width:100%;
+  animation:progressShimmer 1.6s linear infinite;
+  transition:width .35s ease;
+}
+.up-card.complete::after{
+  opacity:0;width:100%;
+  animation:none;
+  transition:width .35s ease,opacity .5s ease .15s;
+}
+@keyframes progressShimmer{
+  0%  {background-position:200% 0}
+  100%{background-position:-200% 0}
+}
 
 /* CHECKLIST */
 .cl-wrap{margin-bottom:26px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -291,7 +319,7 @@ body.light nav{background:rgba(240,245,250,.95)}
 .bar-row{margin-bottom:16px}
 .bar-lbl{display:flex;justify-content:space-between;font-size:.81rem;color:var(--text);margin-bottom:7px}
 .bar-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1.2s ease;width:0}
+.bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
 
 /* COVER LETTER */
 .cv-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:22px}
@@ -848,12 +876,14 @@ dz.addEventListener('drop',function(e){
 anBtn.addEventListener('click',async function(){
   if(!selFile)return;
   var jobRole=document.getElementById('jobRole').value.trim()||'Software Developer';
+  var card = document.getElementById('upCard');
   document.getElementById('lov').classList.add('on');
   anBtn.disabled=true;startLoad();aStart=Date.now();
-  // ── Animation 7: show skeleton immediately ──
+  // ── Suggestion 3: start progress bar ──
+  card.classList.remove('done','complete');
+  card.classList.add('analyzing');
   document.getElementById('skelSec').classList.add('on');
   document.getElementById('resSec').classList.remove('on');
-  // scroll down so skeleton is visible
   document.getElementById('skelSec').scrollIntoView({behavior:'smooth',block:'start'});
   try{
     var fd=new FormData();fd.append('resume',selFile);fd.append('jobRole',jobRole);
@@ -863,11 +893,20 @@ anBtn.addEventListener('click',async function(){
     var elapsed=Math.round((Date.now()-aStart)/1000);
     recTime(elapsed);incCount();
     curResult=Object.assign({},result,{jobRole:jobRole,fileName:selFile.name});
-    // ── Animation 7: hide skeleton, reveal real results ──
+    // ── Suggestion 3: snap to 100% then fade out ──
+    card.classList.remove('analyzing');
+    card.classList.add('done');
+    setTimeout(function(){ card.classList.add('complete'); },400);
+    setTimeout(function(){ card.classList.remove('done','complete'); },1000);
     document.getElementById('skelSec').classList.remove('on');
     showResults(result);
     toast('Analysis complete! Scroll down to view your report.','ts',4000);
   }catch(e){
+    // ── Suggestion 3: fade out bar on error too ──
+    card.classList.remove('analyzing');
+    card.classList.add('done');
+    setTimeout(function(){ card.classList.add('complete'); },300);
+    setTimeout(function(){ card.classList.remove('done','complete'); },900);
     document.getElementById('skelSec').classList.remove('on');
     toast('Error: '+e.message+' — Make sure Flask is running: python app.py','te',7000);
   }finally{
@@ -955,9 +994,30 @@ function animateCounter(elId,from,to,dur){
 
 function setBar(id,vid,pct,delay){
   pct=Math.min(100,Math.max(0,pct));
+  var bar=document.getElementById(id);
+  var lbl=document.getElementById(vid);
+  // ── Suggestion 4: always animate from 0 ──
+  // Step 1: disable transition and snap to 0 instantly
+  bar.style.transition='none';
+  bar.style.width='0%';
+  lbl.textContent='0%';
+  // Step 2: force a reflow so the browser registers the 0% state
+  void bar.offsetWidth;
+  // Step 3: re-enable transition and animate to target after stagger delay
   setTimeout(function(){
-    document.getElementById(id).style.width=pct+'%';
-    document.getElementById(vid).textContent=pct+'%';
+    bar.style.transition='width 1.2s cubic-bezier(.22,1,.36,1)';
+    bar.style.width=pct+'%';
+    // animate the label counter in sync
+    var start=null,dur=1200;
+    function tick(ts){
+      if(!start)start=ts;
+      var p=Math.min((ts-start)/dur,1);
+      var ease=1-Math.pow(1-p,3);
+      lbl.textContent=Math.round(ease*pct)+'%';
+      if(p<1)requestAnimationFrame(tick);
+      else lbl.textContent=pct+'%';
+    }
+    requestAnimationFrame(tick);
   },delay||0);
 }
 function analyzeAgain(){clearResults();window.scrollTo({top:document.querySelector('.up-sec').offsetTop-100,behavior:'smooth'});}
