@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ResumeIQ — My Reports</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -244,12 +245,19 @@ footer{position:relative;z-index:1;padding:30px 52px;border-top:1px solid var(--
   nav{padding:14px 20px}.nav-links{display:none}.hamburger{display:flex}
   footer{flex-direction:column;gap:11px;text-align:center;padding:22px}
 }
+.nav-links a.nav-active{color:var(--text)!important;font-weight:600}
+.nav-links a.nav-active::after{content:'';display:block;height:2px;background:var(--accent);border-radius:1px;margin-top:2px}
+.rep-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:var(--bg);font-size:.65rem;font-weight:800;border-radius:100px;padding:1px 6px;margin-left:5px;min-width:18px;line-height:1.5;vertical-align:middle}
+.scroll-top{position:fixed;bottom:28px;right:28px;width:42px;height:42px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--accent);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;transform:translateY(12px);transition:opacity .3s,transform .3s,box-shadow .2s,background .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.scroll-top.visible{opacity:1;transform:translateY(0);pointer-events:all}
+.scroll-top:hover{background:var(--accent);color:var(--bg);box-shadow:0 6px 20px rgba(137,194,224,.35)}
 </style>
 </head>
 <body>
 
 <!-- DRAWER -->
 <div class="drawer-overlay" id="dOv" onclick="closeDrawer()"></div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
     <div class="drawer-logo">Resume<span>IQ</span></div>
@@ -300,6 +308,7 @@ footer{position:relative;z-index:1;padding:30px 52px;border-top:1px solid var(--
   <a href="index.html" class="logo"><div class="logo-dot"></div>Resume<span>IQ</span></a>
   <ul class="nav-links">
     <li><a href="index.html">Home</a></li>
+    <li><a href="report.html" class="nav-active">📋 My Reports</a></li>
     <li><a href="analyzer.html" class="nav-cta">+ New Analysis</a></li>
   </ul>
   <button class="hamburger" id="hbg"><span></span><span></span><span></span></button>
@@ -627,6 +636,51 @@ function init(){
   if(target&&reports.find(function(r){return r.id===target;})) selectReport(target);
   else if(reports.length) selectReport(reports.slice().reverse()[0].id);
 }
+// ── Escape closes drawer / mobile menu ───────────────────────────
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ closeDrawer(); closeMob(); }
+});
+
+// ── Active nav link (auto-detect) ─────────────────────────────────
+(function(){
+  var page=location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('.nav-links a').forEach(function(a){
+    var href=(a.getAttribute('href')||'').split('#')[0].split('/').pop();
+    if(href && href===page && !a.classList.contains('nav-cta')) a.classList.add('nav-active');
+  });
+})();
+
+// ── Report count badge ────────────────────────────────────────────
+(function(){
+  var badge=document.getElementById('navRepBadge');
+  if(!badge) return;
+  var count=reports.length;
+  if(count>0){badge.textContent=count;badge.style.display='inline-flex';}
+})();
+
+// ── Scroll-to-top: listens to detail pane scroll (not window) ────
+(function(){
+  var btn  = document.getElementById('scrollTop');
+  var pane = document.getElementById('detPane');
+  if(!btn || !pane) return;
+
+  // update button when detail pane scrolls
+  pane.addEventListener('scroll', function(){
+    btn.classList.toggle('visible', pane.scrollTop > 400);
+  }, {passive:true});
+
+  // also catch window scroll (mobile single-column layout)
+  window.addEventListener('scroll', function(){
+    btn.classList.toggle('visible', window.scrollY > 400);
+  }, {passive:true});
+
+  // clicking scrolls the detail pane to top (desktop) or window (mobile)
+  btn.onclick = function(){
+    pane.scrollTo({top:0, behavior:'smooth'});
+    window.scrollTo({top:0, behavior:'smooth'});
+  };
+})();
+
 init();
 </script>
 </body>
