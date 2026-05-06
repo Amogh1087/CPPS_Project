@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ResumeIQ — AI Resume Analyzer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -141,6 +142,12 @@ body{animation:pageFadeIn .4s ease both}
 /* Navbar scroll */
 nav{transition:padding .3s ease,background .25s,box-shadow .3s}
 nav.scrolled{padding-top:10px;padding-bottom:10px;box-shadow:0 4px 24px rgba(0,0,0,.28)}
+.nav-links a.nav-active{color:var(--text)!important;font-weight:600}
+.nav-links a.nav-active::after{content:'';display:block;height:2px;background:var(--accent);border-radius:1px;margin-top:2px}
+.rep-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:var(--bg);font-size:.65rem;font-weight:800;border-radius:100px;padding:1px 6px;margin-left:5px;min-width:18px;line-height:1.5;vertical-align:middle}
+.scroll-top{position:fixed;bottom:28px;right:28px;width:42px;height:42px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--accent);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;transform:translateY(12px);transition:opacity .3s,transform .3s,box-shadow .2s,background .2s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.scroll-top.visible{opacity:1;transform:translateY(0);pointer-events:all}
+.scroll-top:hover{background:var(--accent);color:var(--bg);box-shadow:0 6px 20px rgba(137,194,224,.35)}
 
 /* ── Animation 8: Scroll reveal ── */
 .sr{opacity:0;transform:translateY(36px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
@@ -191,7 +198,7 @@ nav.scrolled{padding-top:10px;padding-bottom:10px;box-shadow:0 4px 24px rgba(0,0
 .rep-score{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;padding:3px 13px;border-radius:100px}
 .rep-date{font-size:.72rem;color:var(--muted)}
 .rep-role{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:7px}
-.rep-sum{font-size:.8rem;color:var(--muted);font-weight:300;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rep-sum{font-size:.8rem;color:var(--muted);font-weight:300;line-height:1.45;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rep-foot{margin-top:14px;font-size:.75rem;color:var(--accent);font-weight:500}
 
 /* ── HOW / FEATURES / CTA ── */
@@ -242,6 +249,7 @@ footer{position:relative;z-index:1;padding:44px 60px;border-top:1px solid var(--
 <body>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
     <div class="drawer-logo">Resume<span>IQ</span></div>
@@ -295,7 +303,7 @@ footer{position:relative;z-index:1;padding:44px 60px;border-top:1px solid var(--
   <ul class="nav-links">
     <li><a href="#how">How It Works</a></li>
     <li><a href="#features">Features</a></li>
-    <li><a href="report.html">📋 My Reports</a></li>
+    <li><a href="report.html">📋 My Reports<span class="rep-badge" id="navRepBadge" style="display:none"></span></a></li>
     <li><a href="analyzer.html" class="nav-cta">Try Free →</a></li>
   </ul>
   <button class="hamburger" id="hbg"><span></span><span></span><span></span></button>
@@ -651,6 +659,34 @@ renderStats(); renderReports();
 // ── Navbar scroll shrink ──────────────────────────────────────────
 window.addEventListener('scroll',function(){
   document.querySelector('nav').classList.toggle('scrolled',window.scrollY>40);
+},{passive:true});
+
+// ── Escape closes drawer / mobile menu ───────────────────────────
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ closeDrawer(); closeMob(); }
+});
+
+// ── Active nav link ───────────────────────────────────────────────
+(function(){
+  var page=location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('.nav-links a').forEach(function(a){
+    var href=(a.getAttribute('href')||'').split('#')[0].split('/').pop();
+    if(href && href===page) a.classList.add('nav-active');
+  });
+})();
+
+// ── Report count badge ────────────────────────────────────────────
+(function(){
+  var badge=document.getElementById('navRepBadge');
+  if(!badge) return;
+  var count=JSON.parse(localStorage.getItem('riq_reports')||'[]').length;
+  if(count>0){badge.textContent=count;badge.style.display='inline-flex';}
+})();
+
+// ── Scroll-to-top visibility ──────────────────────────────────────
+window.addEventListener('scroll',function(){
+  var btn=document.getElementById('scrollTop');
+  if(btn) btn.classList.toggle('visible',window.scrollY>80);
 },{passive:true});
 </script>
 </body>
